@@ -40,11 +40,12 @@
                                 <td>@item.Name</td>
                                 <td class="text-end">@item.Price.ToString("0.00") €</td>
                                 <td class="text-nowrap text-end">
+                                    <a class="btn btn-sm psg-btn-ghost me-2" asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id">Редактирай</a>
                                     <a class="btn btn-sm psg-btn-ghost me-2" asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">Детайли</a>
                                     <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline me-2">
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Product")" />
-                                        <button class="btn btn-sm psg-btn-red" type="submit">В количка</button>
+                                        <button class="btn btn-sm psg-btn-red" type="submit">🛒 В количка</button>
                                     </form>
                                     <form asp-action="Delete" asp-controller="Product" asp-route-id="@item.Id" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Изтрий</button>

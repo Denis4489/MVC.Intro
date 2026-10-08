@@ -36,6 +36,35 @@ namespace MVC.Intro.Controllers
             return View(viewModel);
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Edit(Guid id)
+        {
+            var product = _productService.GetProductById(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new CreateProductViewModel
+            {
+                Product = product,
+                AvailableImages = _imageService.GetAvailableImages()
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult EditProduct(CreateProductViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                viewModel.AvailableImages = _imageService.GetAvailableImages();
+                return View("Edit", viewModel);
+            }
+            _productService.UpdateProduct(viewModel.Product);
+            return RedirectToAction(nameof(Index));
+        }
+
         [HttpPost]
         public IActionResult Delete(Guid id)
         {

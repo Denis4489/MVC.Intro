@@ -1,0 +1,56 @@
+@model MVC.Intro.Models.CreateProductViewModel
+
+@{
+    ViewData["Title"] = "Редактиране на артикул";
+}
+
+<section class="psg-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="psg-card">
+                    <h1 class="psg-title">Редактиране на артикул</h1>
+                    <form asp-action="EditProduct">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Product.Id" />
+                        <div class="mb-3">
+                            <label asp-for="Product.Name" class="form-label"></label>
+                            <input asp-for="Product.Name" class="form-control psg-input" />
+                            <span asp-validation-for="Product.Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Product.Price" class="form-label"></label>
+                            <input asp-for="Product.Price" class="form-control psg-input" />
+                            <span asp-validation-for="Product.Price" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Product.ImageUrl" class="form-label">Снимка</label>
+                            <select asp-for="Product.ImageUrl" class="form-control psg-input">
+                                <option value="">-- Без снимка --</option>
+                                @foreach (var image in Model.AvailableImages)
+                                {
+                                    <option value="@image">@image.Replace("/images/", "")</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Product.ImageUrl" class="text-danger"></span>
+                            @if (Model.AvailableImages.Count == 0)
+                            {
+                                <small class="text-danger">Няма налични снимки в папка wwwroot/images</small>
+                            }
+                            else
+                            {
+                                <small class="text-muted">Налични снимки: @Model.AvailableImages.Count</small>
+                            }
+                        </div>
+                        <button type="submit" class="btn psg-btn-red">Запази</button>
+                        <a class="btn psg-btn-ghost" asp-action="Index">Назад</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

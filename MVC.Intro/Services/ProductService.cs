@@ -34,7 +34,8 @@ namespace MVC.Intro.Services
             var toAdd = new Product
             {
                 Name = product.Name,
-                Price = product.Price
+                Price = product.Price,
+                ImageUrl = product.ImageUrl
             };
             _logger.LogInformation("Adding product: {ProductName} with price {ProductPrice}", toAdd.Name, toAdd.Price);
             if (product == null)
@@ -58,6 +59,19 @@ namespace MVC.Intro.Services
                 throw new ArgumentNullException("Product not found");
             }
             _context.Products.Remove(product);
+            _context.SaveChanges();
+        }
+
+        public void UpdateProduct(Product product)
+        {
+            var existing = _context.Products.FirstOrDefault(p => p.Id == product.Id);
+            if (existing == null)
+            {
+                throw new ArgumentNullException("Product not found");
+            }
+            existing.Name = product.Name;
+            existing.Price = product.Price;
+            existing.ImageUrl = product.ImageUrl;
             _context.SaveChanges();
         }
 
