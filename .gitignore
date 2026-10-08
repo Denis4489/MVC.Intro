@@ -282,6 +282,10 @@ ServiceFabricBackup/
 *.ldf
 *.ndf
 
+# Don't ignore SQLite database files
+!*.db
+!MVC.Intro/Data/*.db
+
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout
