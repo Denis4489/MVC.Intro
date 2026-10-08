@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Paris Saint-Germain</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MVC.Intro.styles.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="psg-header">
+        <div class="psg-stripe"></div>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand psg-brand" asp-controller="Home" asp-action="Index">
+                    <span class="psg-crest">PSG</span>
+                    <span>
+                        <strong>Paris Saint-Germain</strong>
+                        <small>Официален фен магазин</small>
+                    </span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#psgNav" aria-controls="psgNav" aria-expanded="false" aria-label="Меню">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="psgNav">
+                    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Магазин</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Product" asp-action="Index">Каталог</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Privacy">Клубът</a>
+                        </li>
+                        <li class="nav-item">
+                            @await Component.InvokeAsync("CartBadge")
+                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item d-flex align-items-center gap-2">
+                                <span class="psg-user">@User.Identity.Name</span>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    <button type="submit" class="btn btn-sm psg-btn-ghost">Изход</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="btn psg-btn-red" asp-controller="Account" asp-action="Login">Вход</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main">
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="container pt-3">
+                <div class="alert psg-alert mb-0">@notice</div>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="psg-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>© @DateTime.Now.Year Paris Saint-Germain · Ici c'est Paris</span>
+            <a asp-controller="Home" asp-action="Privacy">За клуба</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

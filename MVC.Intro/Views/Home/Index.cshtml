@@ -1,0 +1,62 @@
+﻿@model IEnumerable<ShopProductViewModel>
+@{
+    ViewData["Title"] = "Фен магазин";
+}
+
+<section class="psg-hero">
+    <div class="container">
+        <p class="psg-kicker">Ici c'est Paris</p>
+        <h1>Paris Saint-Germain</h1>
+        <p class="psg-lead">Екипи, шалчета и аксесоари за трибуните на Парк де Пренс.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn psg-btn-red" href="#shop">Пазарувай</a>
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <a class="btn psg-btn-ghost" asp-controller="Account" asp-action="Login">Вход за фенове</a>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="shop" class="psg-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <p class="psg-kicker">Сезон 2025/26</p>
+                <h2 class="psg-title">Клубни артикули</h2>
+            </div>
+        </div>
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-sm-6 col-lg-3">
+                    <article class="psg-product accent-@item.Accent">
+                        <div class="psg-product-art">
+                            @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                            {
+                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="product-image" />
+                            }
+                            else
+                            {
+                                <span>PSG</span>
+                            }
+                        </div>
+                        <div class="psg-product-body">
+                            <small>@item.Category</small>
+                            <h3>@item.Product.Name</h3>
+                            <p>@item.Description</p>
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <strong>@item.Product.Price.ToString("0.00") €</strong>
+                                <form asp-controller="Cart" asp-action="Add" method="post">
+                                    <input type="hidden" name="id" value="@item.Product.Id" />
+                                    <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+                                    <button class="btn btn-sm psg-btn-red" type="submit">В количка</button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+    </div>
+</section>

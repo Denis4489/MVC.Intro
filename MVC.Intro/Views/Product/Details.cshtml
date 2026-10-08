@@ -1,0 +1,32 @@
+﻿@model MVC.Intro.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+    var catalog = MVC.Intro.Services.PsgCatalog.Get(Model.Name);
+}
+
+<section class="psg-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="psg-product accent-@catalog.Accent">
+                    <div class="psg-product-art psg-product-art-lg">
+                        <span>PSG</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="psg-card">
+                    <small class="psg-kicker">@catalog.Category</small>
+                    <h1 class="psg-title">@Model.Name</h1>
+                    <p>@catalog.Description</p>
+                    <p class="fs-3 fw-bold">@Model.Price.ToString("0.00") €</p>
+                    <form asp-controller="Cart" asp-action="Add" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button class="btn psg-btn-red" type="submit">Добави в количка</button>
+                        <a class="btn psg-btn-ghost" asp-action="Index">Назад</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

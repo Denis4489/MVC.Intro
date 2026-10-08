@@ -1,0 +1,14 @@
+@{
+    ViewData["Title"] = "Поръчката е приета";
+}
+
+<section class="psg-section">
+    <div class="container">
+        <div class="psg-card text-center py-5 psg-success">
+            <div class="psg-login-crest mx-auto mb-3">PSG</div>
+            <h1 class="psg-title">Мерси, Парижанино!</h1>
+            <p class="psg-muted">Поръчката е приета. Артикули: @ViewBag.ItemCount · Сума: @(((decimal)ViewBag.Total).ToString("0.00")) €</p>
+            <a class="btn psg-btn-red mt-3" asp-controller="Home" asp-action="Index">Обратно в магазина</a>
+        </div>
+    </div>
+</section>
