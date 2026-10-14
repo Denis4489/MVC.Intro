@@ -11,10 +11,43 @@ namespace MVC.Intro.Controllers
     {
         private readonly IConfiguration _configuration;
 
+        // Emails, which grant admin role — extendable via config
+        private static readonly HashSet<string> AdminEmails = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "admin@tickets.com",
+            "administrator@tickets.com"
+        };
+
         public AccountController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
+
+        /// <summary>
+        /// Derives a display name from the input:
+        /// 1. If the user typed a name → use it as-is
+        /// 2. Otherwise take the part before '@' in the email and title-case it
+        ///    e.g. "ivan.petrov@mail.com" → "Ivan Petrov"
+        /// </summary>
+        private static string ResolveDisplayName(string email, string? typedName)
+        {
+            if (!string.IsNullOrWhiteSpace(typedName))
+                return typedName.Trim();
+
+            var local = email.Split('@')[0];                         // "ivan.petrov"
+            var parts = local.Split(new[] { '.', '_', '-' },        // split on separators
+                StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(" ", parts.Select(p =>
+                char.ToUpper(p[0]) + p[1..]));                      // "Ivan Petrov"
+        }
+
+        /// <summary>
+        /// Derives the user's role:
+        /// - "Admin" for known admin emails
+        /// - "User" for everyone else
+        /// </summary>
+        private static string ResolveRole(string email) =>
+            AdminEmails.Contains(email) ? "Admin" : "User";
 
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
@@ -50,8 +83,9 @@ namespace MVC.Intro.Controllers
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.Name, "PSG Фен"),
-                new(ClaimTypes.Email, demoEmail)
+                new(ClaimTypes.Name,  ResolveDisplayName(demoEmail, model.DisplayName)),
+                new(ClaimTypes.Email, demoEmail),
+                new(ClaimTypes.Role,  ResolveRole(demoEmail))
             };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var properties = new AuthenticationProperties

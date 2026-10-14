@@ -24,6 +24,13 @@
                             <input asp-for="Password" class="form-control tickets-input" autocomplete="current-password" />
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
+                        <div class="mb-3">
+                            <label asp-for="DisplayName" class="form-label"></label>
+                            <input asp-for="DisplayName" class="form-control tickets-input" autocomplete="name"
+                                   placeholder="Иван, ivan.petrov, Фен123…" />
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
+                            <div class="form-text tickets-muted">Оставете празно — ще извлечем от имейла.</div>
+                        </div>
                         <div class="form-check mb-4">
                             <input asp-for="RememberMe" class="form-check-input" />
                             <label asp-for="RememberMe" class="form-check-label"></label>

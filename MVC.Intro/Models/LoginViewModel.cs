@@ -14,6 +14,14 @@ namespace MVC.Intro.Models
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Незадължително. Ако е попълнено, ще се показва в навигацията.
+        /// Ако е празно, се извлича автоматично от имейл адреса.
+        /// </summary>
+        [Display(Name = "Вашето име (по желание)")]
+        [StringLength(50, ErrorMessage = "Името може да е максимум 50 символа")]
+        public string? DisplayName { get; set; }
+
         [Display(Name = "Запомни ме")]
         public bool RememberMe { get; set; }
     }
