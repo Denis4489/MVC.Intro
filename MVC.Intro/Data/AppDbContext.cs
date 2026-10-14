@@ -15,18 +15,18 @@ namespace MVC.Intro.Data
             {
                 Directory.CreateDirectory(dataPath);
             }
-            DbPath = Path.Combine(dataPath, "products.db");
+            DbPath = Path.Combine(dataPath, "events.db");
         }
 
-        public DbSet<Product> Products { get; set; } = null!;
+        public DbSet<Event> Events { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             if (!options.IsConfigured)
             {
                 options.UseSqlite($"Data Source={DbPath}");
-            }                
+            }
         }
-            
+
     }
 }

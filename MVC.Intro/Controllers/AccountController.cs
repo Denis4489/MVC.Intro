@@ -9,8 +9,8 @@ namespace MVC.Intro.Controllers
 {
     public class AccountController : Controller
     {
-        public const string DemoEmail = "psg@fan.com";
-        public const string DemoPassword = "AllezParis!";
+        public const string DemoEmail = "tickets@fan.com";
+        public const string DemoPassword = "Tickets123!";
 
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)

@@ -7,22 +7,22 @@ namespace MVC.Intro.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ProductService _productService;
+        private readonly EventService _eventService;
 
-        public HomeController(ProductService productService)
+        public HomeController(EventService eventService)
         {
-            _productService = productService;
+            _eventService = eventService;
         }
 
         public IActionResult Index()
         {
-            var products = _productService.GetAllProducts()
-                .Select(product =>
+            var events = _eventService.GetAllEvents()
+                .Select(@event =>
                 {
-                    var catalog = PsgCatalog.Get(product.Name);
-                    return new ShopProductViewModel
+                    var catalog = EventCatalog.Get(@event.Name);
+                    return new EventViewModel
                     {
-                        Product = product,
+                        Event = @event,
                         Category = catalog.Category,
                         Description = catalog.Description,
                         Accent = catalog.Accent
@@ -30,7 +30,7 @@ namespace MVC.Intro.Controllers
                 })
                 .ToList();
 
-            return View(products);
+            return View(events);
         }
 
         public IActionResult Privacy()

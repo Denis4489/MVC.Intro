@@ -12,7 +12,7 @@ namespace MVC.Intro
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddTransient<ProductService>();
+            builder.Services.AddTransient<EventService>();
             builder.Services.AddScoped<CartService>();
             builder.Services.AddScoped<ImageService>();
             builder.Services.AddDbContext<AppDbContext>();

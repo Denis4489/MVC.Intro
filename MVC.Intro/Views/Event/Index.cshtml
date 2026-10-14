@@ -1,24 +1,26 @@
-﻿@model IEnumerable<MVC.Intro.Models.Product>
+﻿@model IEnumerable<MVC.Intro.Models.Event>
 @{
     ViewData["Title"] = "Каталог";
 }
 
-<section class="psg-section">
+<section class="tickets-section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <p class="psg-kicker">Админ</p>
-                <h1 class="psg-title">Каталог</h1>
+                <p class="tickets-kicker">Админ</p>
+                <h1 class="tickets-title">Каталог събития</h1>
             </div>
-            <a class="btn psg-btn-red" asp-controller="Product" asp-action="Create">Нов артикул</a>
+            <a class="btn tickets-btn-primary" asp-controller="Event" asp-action="Create">Ново събитие</a>
         </div>
-        <div class="psg-card p-0 overflow-hidden">
+        <div class="tickets-card-bg p-0 overflow-hidden">
             <div class="table-responsive">
-                <table class="table psg-table mb-0 align-middle">
+                <table class="table tickets-table mb-0 align-middle">
                     <thead>
                         <tr>
                             <th>Снимка</th>
                             <th>@Html.DisplayNameFor(m => m.Name)</th>
+                            <th>Дата</th>
+                            <th>Място</th>
                             <th class="text-end">@Html.DisplayNameFor(m => m.Price)</th>
                             <th></th>
                         </tr>
@@ -38,16 +40,18 @@
                                     }
                                 </td>
                                 <td>@item.Name</td>
+                                <td>@item.EventDate.ToString("dd MMM yyyy")</td>
+                                <td>@item.Venue</td>
                                 <td class="text-end">@item.Price.ToString("0.00") €</td>
                                 <td class="text-nowrap text-end">
-                                    <a class="btn btn-sm psg-btn-ghost me-2" asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id">Редактирай</a>
-                                    <a class="btn btn-sm psg-btn-ghost me-2" asp-controller="Product" asp-action="Details" asp-route-id="@item.Id">Детайли</a>
+                                    <a class="btn btn-sm tickets-btn-ghost me-2" asp-controller="Event" asp-action="Edit" asp-route-id="@item.Id">Редактирай</a>
+                                    <a class="btn btn-sm tickets-btn-ghost me-2" asp-controller="Event" asp-action="Details" asp-route-id="@item.Id">Детайли</a>
                                     <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline me-2">
                                         <input type="hidden" name="id" value="@item.Id" />
-                                        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Product")" />
-                                        <button class="btn btn-sm psg-btn-red" type="submit">🛒 В количка</button>
+                                        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Event")" />
+                                        <button class="btn btn-sm tickets-btn-primary" type="submit">🛒 В количка</button>
                                     </form>
-                                    <form asp-action="Delete" asp-controller="Product" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <form asp-action="Delete" asp-controller="Event" asp-route-id="@item.Id" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Изтрий</button>
                                     </form>
                                 </td>

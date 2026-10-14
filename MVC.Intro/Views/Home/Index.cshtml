@@ -1,56 +1,57 @@
-﻿@model IEnumerable<ShopProductViewModel>
+﻿@model IEnumerable<EventViewModel>
 @{
-    ViewData["Title"] = "Фен магазин";
+    ViewData["Title"] = "Събития";
 }
 
-<section class="psg-hero">
+<section class="tickets-hero">
     <div class="container">
-        <p class="psg-kicker">Ici c'est Paris</p>
-        <h1>Paris Saint-Germain</h1>
-        <p class="psg-lead">Екипи, шалчета и аксесоари за трибуните на Парк де Пренс.</p>
+        <p class="tickets-kicker">Вашият билет за спорта</p>
+        <h1>Tickets</h1>
+        <p class="tickets-lead">Билети за най-великите футболни събития от всички топ лиги.</p>
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn psg-btn-red" href="#shop">Пазарувай</a>
+            <a class="btn tickets-btn-primary" href="#events">Виж събития</a>
             @if (User.Identity?.IsAuthenticated != true)
             {
-                <a class="btn psg-btn-ghost" asp-controller="Account" asp-action="Login">Вход за фенове</a>
+                <a class="btn tickets-btn-ghost" asp-controller="Account" asp-action="Login">Вход</a>
             }
         </div>
     </div>
 </section>
 
-<section id="shop" class="psg-section">
+<section id="events" class="tickets-section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <p class="psg-kicker">Сезон 2025/26</p>
-                <h2 class="psg-title">Клубни артикули</h2>
+                <p class="tickets-kicker">Предстоящи мачове</p>
+                <h2 class="tickets-title">Спортни събития</h2>
             </div>
         </div>
         <div class="row g-4">
             @foreach (var item in Model)
             {
                 <div class="col-sm-6 col-lg-3">
-                    <article class="psg-product accent-@item.Accent">
-                        <div class="psg-product-art">
-                            @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                    <article class="tickets-card accent-@item.Accent">
+                        <div class="tickets-card-art">
+                            @if (!string.IsNullOrEmpty(item.Event.ImageUrl))
                             {
-                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="product-image" />
+                                <img src="@item.Event.ImageUrl" alt="@item.Event.Name" class="product-image" />
                             }
                             else
                             {
-                                <span>PSG</span>
+                                <span>🎫</span>
                             }
                         </div>
-                        <div class="psg-product-body">
+                        <div class="tickets-card-body">
                             <small>@item.Category</small>
-                            <h3>@item.Product.Name</h3>
+                            <h3>@item.Event.Name</h3>
+                            <p>@item.Event.EventDate.ToString("dd MMM yyyy, HH:mm") - @item.Event.Venue</p>
                             <p>@item.Description</p>
                             <div class="d-flex justify-content-between align-items-center gap-2">
-                                <strong>@item.Product.Price.ToString("0.00") €</strong>
+                                <strong>@item.Event.Price.ToString("0.00") €</strong>
                                 <form asp-controller="Cart" asp-action="Add" method="post">
-                                    <input type="hidden" name="id" value="@item.Product.Id" />
+                                    <input type="hidden" name="id" value="@item.Event.Id" />
                                     <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
-                                    <button class="btn btn-sm psg-btn-red" type="submit">🛒 В количка</button>
+                                    <button class="btn btn-sm tickets-btn-primary" type="submit">🛒 В количка</button>
                                 </form>
                             </div>
                         </div>

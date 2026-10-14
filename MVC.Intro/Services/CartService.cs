@@ -5,14 +5,14 @@ namespace MVC.Intro.Services
 {
     public class CartService
     {
-        private const string SessionKey = "PsgCart";
+        private const string SessionKey = "TicketsCart";
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ProductService _productService;
+        private readonly EventService _eventService;
 
-        public CartService(IHttpContextAccessor httpContextAccessor, ProductService productService)
+        public CartService(IHttpContextAccessor httpContextAccessor, EventService eventService)
         {
             _httpContextAccessor = httpContextAccessor;
-            _productService = productService;
+            _eventService = eventService;
         }
 
         public List<CartItem> GetItems()
@@ -28,14 +28,14 @@ namespace MVC.Intro.Services
 
         public int Count => GetItems().Sum(item => item.Quantity);
 
-        public void Add(Guid productId, int quantity = 1)
+        public void Add(Guid eventId, int quantity = 1)
         {
-            _productService.GetProductById(productId);
+            _eventService.GetEventById(eventId);
             var items = GetItems();
-            var existing = items.FirstOrDefault(item => item.ProductId == productId);
+            var existing = items.FirstOrDefault(item => item.ProductId == eventId);
             if (existing is null)
             {
-                items.Add(new CartItem { ProductId = productId, Quantity = Math.Max(1, quantity) });
+                items.Add(new CartItem { ProductId = eventId, Quantity = Math.Max(1, quantity) });
             }
             else
             {
@@ -45,10 +45,10 @@ namespace MVC.Intro.Services
             Save(items);
         }
 
-        public void Update(Guid productId, int quantity)
+        public void Update(Guid eventId, int quantity)
         {
             var items = GetItems();
-            var existing = items.FirstOrDefault(item => item.ProductId == productId);
+            var existing = items.FirstOrDefault(item => item.ProductId == eventId);
             if (existing is null)
             {
                 return;
@@ -66,9 +66,9 @@ namespace MVC.Intro.Services
             Save(items);
         }
 
-        public void Remove(Guid productId)
+        public void Remove(Guid eventId)
         {
-            var items = GetItems().Where(item => item.ProductId != productId).ToList();
+            var items = GetItems().Where(item => item.ProductId != eventId).ToList();
             Save(items);
         }
 
@@ -79,14 +79,14 @@ namespace MVC.Intro.Services
             return GetItems()
                 .Select(item =>
                 {
-                    var product = _productService.GetProductById(item.ProductId);
-                    var catalog = PsgCatalog.Get(product.Name);
+                    var @event = _eventService.GetEventById(item.ProductId);
+                    var catalog = EventCatalog.Get(@event.Name);
                     return new CartLineViewModel
                     {
-                        ProductId = product.Id,
-                        Name = product.Name,
+                        ProductId = @event.Id,
+                        Name = @event.Name,
                         Category = catalog.Category,
-                        Price = product.Price,
+                        Price = @event.Price,
                         Quantity = item.Quantity
                     };
                 })

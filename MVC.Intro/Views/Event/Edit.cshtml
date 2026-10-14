@@ -1,0 +1,86 @@
+@model MVC.Intro.Models.CreateEventViewModel
+
+@{
+    ViewData["Title"] = "Редактиране на събитие";
+}
+
+<section class="tickets-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="tickets-card-bg">
+                    <h1 class="tickets-title">Редактиране на събитие</h1>
+                    <form asp-action="EditEvent">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Event.Id" />
+                        <div class="mb-3">
+                            <label asp-for="Event.Name" class="form-label"></label>
+                            <input asp-for="Event.Name" class="form-control tickets-input" />
+                            <span asp-validation-for="Event.Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.Price" class="form-label"></label>
+                            <input asp-for="Event.Price" class="form-control tickets-input" />
+                            <span asp-validation-for="Event.Price" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.EventDate" class="form-label"></label>
+                            <input asp-for="Event.EventDate" class="form-control tickets-input" type="datetime-local" />
+                            <span asp-validation-for="Event.EventDate" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.Venue" class="form-label"></label>
+                            <input asp-for="Event.Venue" class="form-control tickets-input" />
+                            <span asp-validation-for="Event.Venue" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.TicketType" class="form-label"></label>
+                            <input asp-for="Event.TicketType" class="form-control tickets-input" />
+                            <span asp-validation-for="Event.TicketType" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.Capacity" class="form-label"></label>
+                            <input asp-for="Event.Capacity" class="form-control tickets-input" type="number" />
+                            <span asp-validation-for="Event.Capacity" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.AvailableTickets" class="form-label"></label>
+                            <input asp-for="Event.AvailableTickets" class="form-control tickets-input" type="number" />
+                            <span asp-validation-for="Event.AvailableTickets" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.Description" class="form-label"></label>
+                            <textarea asp-for="Event.Description" class="form-control tickets-input" rows="3"></textarea>
+                            <span asp-validation-for="Event.Description" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Event.ImageUrl" class="form-label">Снимка</label>
+                            <select asp-for="Event.ImageUrl" class="form-control tickets-input">
+                                <option value="">-- Без снимка --</option>
+                                @foreach (var image in Model.AvailableImages)
+                                {
+                                    <option value="@image">@image.Replace("/images/", "")</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Event.ImageUrl" class="text-danger"></span>
+                            @if (Model.AvailableImages.Count == 0)
+                            {
+                                <small class="text-danger">Няма налични снимки в папка wwwroot/images</small>
+                            }
+                            else
+                            {
+                                <small class="text-muted">Налични снимки: @Model.AvailableImages.Count</small>
+                            }
+                        </div>
+                        <button type="submit" class="btn tickets-btn-primary">Запази</button>
+                        <a class="btn tickets-btn-ghost" asp-action="Index">Назад</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

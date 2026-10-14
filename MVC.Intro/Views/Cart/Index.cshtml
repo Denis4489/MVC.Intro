@@ -4,31 +4,31 @@
     var total = (decimal)(ViewBag.Total ?? 0m);
 }
 
-<section class="psg-section">
+<section class="tickets-section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <p class="psg-kicker">Поръчка</p>
-                <h1 class="psg-title">Количка</h1>
+                <p class="tickets-kicker">Поръчка</p>
+                <h1 class="tickets-title">Количка</h1>
             </div>
-            <a class="btn psg-btn-ghost" asp-controller="Home" asp-action="Index">Продължи пазаруването</a>
+            <a class="btn tickets-btn-ghost" asp-controller="Home" asp-action="Index">Продължи пазаруването</a>
         </div>
 
         @if (!Model.Any())
         {
-            <div class="psg-card text-center py-5">
-                <p class="mb-3">Количката е празна. Избери екип или аксесоар от магазина.</p>
-                <a class="btn psg-btn-red" asp-controller="Home" asp-action="Index">Към магазина</a>
+            <div class="tickets-card-bg text-center py-5">
+                <p class="mb-3">Количката е празна. Избери събитие от списъка.</p>
+                <a class="btn tickets-btn-primary" asp-controller="Home" asp-action="Index">Към събитията</a>
             </div>
         }
         else
         {
-            <div class="psg-card p-0 overflow-hidden">
+            <div class="tickets-card-bg p-0 overflow-hidden">
                 <div class="table-responsive">
-                    <table class="table psg-table mb-0 align-middle">
+                    <table class="table tickets-table mb-0 align-middle">
                         <thead>
                             <tr>
-                                <th>Артикул</th>
+                                <th>Събитие</th>
                                 <th>Цена</th>
                                 <th>Количество</th>
                                 <th class="text-end">Общо</th>
@@ -41,14 +41,14 @@
                                 <tr>
                                     <td>
                                         <strong>@line.Name</strong>
-                                        <div class="psg-muted">@line.Category</div>
+                                        <div class="tickets-muted">@line.Category</div>
                                     </td>
                                     <td>@line.Price.ToString("0.00") €</td>
                                     <td>
                                         <form asp-action="Update" method="post" class="d-flex gap-2 align-items-center">
                                             <input type="hidden" name="id" value="@line.ProductId" />
-                                            <input class="form-control psg-qty" type="number" min="1" max="20" name="quantity" value="@line.Quantity" />
-                                            <button class="btn btn-sm psg-btn-ghost" type="submit">Обнови</button>
+                                            <input class="form-control tickets-qty" type="number" min="1" max="20" name="quantity" value="@line.Quantity" />
+                                            <button class="btn btn-sm tickets-btn-ghost" type="submit">Обнови</button>
                                         </form>
                                     </td>
                                     <td class="text-end">@line.LineTotal.ToString("0.00") €</td>
@@ -67,7 +67,7 @@
 
             <div class="row justify-content-end mt-4">
                 <div class="col-md-5">
-                    <div class="psg-card">
+                    <div class="tickets-card-bg">
                         <div class="d-flex justify-content-between mb-3">
                             <span>Обща сума</span>
                             <strong>@total.ToString("0.00") €</strong>
@@ -75,12 +75,12 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <form asp-action="Checkout" method="post">
-                                <button class="btn psg-btn-red w-100" type="submit">Завърши поръчката</button>
+                                <button class="btn tickets-btn-primary w-100" type="submit">Завърши поръчката</button>
                             </form>
                         }
                         else
                         {
-                            <a class="btn psg-btn-red w-100" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Index", "Cart")">Влез, за да поръчаш</a>
+                            <a class="btn tickets-btn-primary w-100" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Index", "Cart")">Влез, за да поръчаш</a>
                         }
                     </div>
                 </div>

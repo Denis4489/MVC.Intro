@@ -1,8 +1,8 @@
 namespace MVC.Intro.Models
 {
-    public class ShopProductViewModel
+    public class EventViewModel
     {
-        public Product Product { get; set; } = null!;
+        public Event Event { get; set; } = new() { Name = "", Venue = "", TicketType = "" };
         public string Category { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Accent { get; set; } = "navy";

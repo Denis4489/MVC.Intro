@@ -5,31 +5,31 @@ using MVC.Intro.Services;
 namespace MVC.Intro.Controllers
 {
     [Route("[controller]/[action]")]
-    public class ProductController : Controller
+    public class EventController : Controller
     {
-        private readonly ProductService _productService;
+        private readonly EventService _eventService;
         private readonly ImageService _imageService;
 
-        public ProductController(ProductService productService, ImageService imageService)
+        public EventController(EventService eventService, ImageService imageService)
         {
-            _productService = productService;
+            _eventService = eventService;
             _imageService = imageService;
         }
 
         public IActionResult Index()
         {
-            return View(_productService.GetAllProducts());
+            return View(_eventService.GetAllEvents());
         }
-        [HttpGet("{id}")]//https://localhost:7206/Product/Details/52e9ba06-3b56-4f3d-973c-388efb0e4417
+        [HttpGet("{id}")]
         public IActionResult Details(Guid id)
         {
-            return View(_productService.GetProductById(id));
+            return View(_eventService.GetEventById(id));
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-            var viewModel = new CreateProductViewModel
+            var viewModel = new CreateEventViewModel
             {
                 AvailableImages = _imageService.GetAvailableImages()
             };
@@ -39,48 +39,48 @@ namespace MVC.Intro.Controllers
         [HttpGet("{id}")]
         public IActionResult Edit(Guid id)
         {
-            var product = _productService.GetProductById(id);
-            if (product == null)
+            var @event = _eventService.GetEventById(id);
+            if (@event == null)
             {
                 return NotFound();
             }
 
-            var viewModel = new CreateProductViewModel
+            var viewModel = new CreateEventViewModel
             {
-                Product = product,
+                Event = @event,
                 AvailableImages = _imageService.GetAvailableImages()
             };
             return View(viewModel);
         }
 
         [HttpPost]
-        public IActionResult EditProduct(CreateProductViewModel viewModel)
+        public IActionResult EditEvent(CreateEventViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 viewModel.AvailableImages = _imageService.GetAvailableImages();
                 return View("Edit", viewModel);
             }
-            _productService.UpdateProduct(viewModel.Product);
+            _eventService.UpdateEvent(viewModel.Event);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public IActionResult Delete(Guid id)
         {
-            _productService.DeleteProduct(id);
+            _eventService.DeleteEvent(id);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public IActionResult CreateProduct(CreateProductViewModel viewModel)
+        public IActionResult CreateEvent(CreateEventViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 viewModel.AvailableImages = _imageService.GetAvailableImages();
                 return View("Create", viewModel);
             }
-            _productService.AddProduct(viewModel.Product);
+            _eventService.AddEvent(viewModel.Event);
             return RedirectToAction(nameof(Index));
         }
     }
