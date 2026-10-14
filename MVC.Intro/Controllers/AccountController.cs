@@ -9,8 +9,12 @@ namespace MVC.Intro.Controllers
 {
     public class AccountController : Controller
     {
-        public const string DemoEmail = "tickets@fan.com";
-        public const string DemoPassword = "Tickets123!";
+        private readonly IConfiguration _configuration;
+
+        public AccountController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
@@ -34,8 +38,11 @@ namespace MVC.Intro.Controllers
                 return View(model);
             }
 
-            if (!string.Equals(model.Email, DemoEmail, StringComparison.OrdinalIgnoreCase)
-                || model.Password != DemoPassword)
+            var demoEmail = _configuration["Demo:Email"] ?? "tickets@fan.com";
+            var demoPassword = _configuration["Demo:Password"] ?? "Tickets123!";
+
+            if (!string.Equals(model.Email, demoEmail, StringComparison.OrdinalIgnoreCase)
+                || model.Password != demoPassword)
             {
                 ModelState.AddModelError(string.Empty, "Невалиден имейл или парола.");
                 return View(model);
@@ -44,7 +51,7 @@ namespace MVC.Intro.Controllers
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, "PSG Фен"),
-                new(ClaimTypes.Email, DemoEmail)
+                new(ClaimTypes.Email, demoEmail)
             };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var properties = new AuthenticationProperties

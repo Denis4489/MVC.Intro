@@ -13,17 +13,17 @@ namespace MVC.Intro.Controllers
             _cartService = cartService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            ViewBag.Total = _cartService.Total;
-            return View(_cartService.GetLines());
+            ViewBag.Total = await _cartService.GetTotalAsync();
+            return View(await _cartService.GetLinesAsync());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Add(Guid id, string? returnUrl = null)
+        public async Task<IActionResult> Add(Guid id, string? returnUrl = null)
         {
-            _cartService.Add(id);
+            await _cartService.AddAsync(id);
             TempData["Notice"] = "Артикулът е добавен в количката.";
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
@@ -53,7 +53,7 @@ namespace MVC.Intro.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Checkout()
+        public async Task<IActionResult> Checkout()
         {
             if (_cartService.Count == 0)
             {
@@ -61,7 +61,7 @@ namespace MVC.Intro.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Total = _cartService.Total;
+            ViewBag.Total = await _cartService.GetTotalAsync();
             ViewBag.ItemCount = _cartService.Count;
             _cartService.Clear();
             return View();

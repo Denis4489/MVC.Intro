@@ -7,6 +7,17 @@ namespace MVC.Intro.Data
     {
         public string DbPath { get; }
 
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+            var basePath = Directory.GetCurrentDirectory();
+            var dataPath = Path.Combine(basePath, "Data");
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+            DbPath = Path.Combine(dataPath, "events.db");
+        }
+
         public AppDbContext() : base(new DbContextOptions<AppDbContext>())
         {
             var basePath = Directory.GetCurrentDirectory();
@@ -27,6 +38,5 @@ namespace MVC.Intro.Data
                 options.UseSqlite($"Data Source={DbPath}");
             }
         }
-
     }
 }

@@ -28,9 +28,13 @@ namespace MVC.Intro.Services
 
         public int Count => GetItems().Sum(item => item.Quantity);
 
-        public void Add(Guid eventId, int quantity = 1)
+        public async Task AddAsync(Guid eventId, int quantity = 1)
         {
-            _eventService.GetEventById(eventId);
+            var @event = await _eventService.GetEventByIdAsync(eventId);
+            if (@event == null)
+            {
+                return;
+            }
             var items = GetItems();
             var existing = items.FirstOrDefault(item => item.ProductId == eventId);
             if (existing is null)
@@ -74,26 +78,40 @@ namespace MVC.Intro.Services
 
         public void Clear() => Save(new List<CartItem>());
 
-        public IReadOnlyList<CartLineViewModel> GetLines()
+        public async Task<IReadOnlyList<CartLineViewModel>> GetLinesAsync()
         {
-            return GetItems()
-                .Select(item =>
+            var items = GetItems();
+            var lines = new List<CartLineViewModel>();
+            var validItems = new List<CartItem>();
+
+            foreach (var item in items)
+            {
+                var @event = await _eventService.GetEventByIdAsync(item.ProductId);
+                if (@event == null)
                 {
-                    var @event = _eventService.GetEventById(item.ProductId);
-                    var catalog = EventCatalog.Get(@event.Name);
-                    return new CartLineViewModel
-                    {
-                        ProductId = @event.Id,
-                        Name = @event.Name,
-                        Category = catalog.Category,
-                        Price = @event.Price,
-                        Quantity = item.Quantity
-                    };
-                })
-                .ToList();
+                    continue;
+                }
+                var catalog = EventCatalog.Get(@event.Name);
+                lines.Add(new CartLineViewModel
+                {
+                    ProductId = @event.Id,
+                    Name = @event.Name,
+                    Category = catalog.Category,
+                    Price = @event.Price,
+                    Quantity = item.Quantity
+                });
+                validItems.Add(item);
+            }
+
+            if (validItems.Count != items.Count)
+            {
+                Save(validItems);
+            }
+
+            return lines;
         }
 
-        public decimal Total => GetLines().Sum(line => line.LineTotal);
+        public async Task<decimal> GetTotalAsync() => (await GetLinesAsync()).Sum(l => l.LineTotal);
 
         private ISession Session =>
             _httpContextAccessor.HttpContext?.Session

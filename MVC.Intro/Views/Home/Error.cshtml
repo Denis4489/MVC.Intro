@@ -1,0 +1,23 @@
+@model MVC.Intro.Models.ErrorViewModel
+@{
+    ViewData["Title"] = Model.StatusCode == 404 ? "Страницата не е намерена" : "Грешка";
+}
+
+<section class="tickets-auth">
+    <div class="container py-5 text-center">
+        @if (Model.StatusCode == 404)
+        {
+            <h1 class="display-1">404</h1>
+            <p class="lead">Страницата, която търсиш, не съществува.</p>
+        }
+        else
+        {
+            <h1>Нещо се обърка</h1>
+            @if (Model.ShowRequestId)
+            {
+                <p><small>Request ID: <code>@Model.RequestId</code></small></p>
+            }
+        }
+        <a asp-controller="Home" asp-action="Index" class="btn tickets-btn-primary mt-3">Обратно към началото</a>
+    </div>
+</section>

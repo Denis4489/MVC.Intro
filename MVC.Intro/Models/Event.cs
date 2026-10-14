@@ -11,7 +11,7 @@ namespace MVC.Intro.Models
         [DisplayName("Наименование")]
         [Required(ErrorMessage = "Полето е задължително")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "Дължината на името трябва да е между 3 и 100 символа")]
-        [RegularExpression(@"^[A-Za-zА-Яа-яЁёЪъЬь\s\-]+$", ErrorMessage = "Името може да съдържа само букви, интервали и тирета")]
+        [RegularExpression(@"^[A-Za-zА-Яа-яЁёЪъЬь0-9\s\-]+$", ErrorMessage = "Името може да съдържа само букви, цифри, интервали и тирета")]
         public required string Name { get; set; }
         [DisplayName("Цена")]
         [Required(ErrorMessage = "Задължително е събитието да има цена")]

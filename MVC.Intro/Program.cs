@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using MVC.Intro.Data;
 using MVC.Intro.Services;
 
@@ -12,10 +13,11 @@ namespace MVC.Intro
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddTransient<EventService>();
+            builder.Services.AddScoped<EventService>();
             builder.Services.AddScoped<CartService>();
             builder.Services.AddScoped<ImageService>();
-            builder.Services.AddDbContext<AppDbContext>();
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -45,6 +47,8 @@ namespace MVC.Intro
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+
+            app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MVC.Intro.Models;
 using MVC.Intro.Services;
 
@@ -16,17 +17,24 @@ namespace MVC.Intro.Controllers
             _imageService = imageService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View(_eventService.GetAllEvents());
+            return View(await _eventService.GetAllEventsAsync());
         }
+
         [HttpGet("{id}")]
-        public IActionResult Details(Guid id)
+        public async Task<IActionResult> Details(Guid id)
         {
-            return View(_eventService.GetEventById(id));
+            var @event = await _eventService.GetEventByIdAsync(id);
+            if (@event == null)
+            {
+                return NotFound();
+            }
+            return View(@event);
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult Create()
         {
             var viewModel = new CreateEventViewModel
@@ -37,9 +45,10 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Edit(Guid id)
+        [Authorize]
+        public async Task<IActionResult> Edit(Guid id)
         {
-            var @event = _eventService.GetEventById(id);
+            var @event = await _eventService.GetEventByIdAsync(id);
             if (@event == null)
             {
                 return NotFound();
@@ -54,33 +63,39 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpPost]
-        public IActionResult EditEvent(CreateEventViewModel viewModel)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditEvent(CreateEventViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 viewModel.AvailableImages = _imageService.GetAvailableImages();
                 return View("Edit", viewModel);
             }
-            _eventService.UpdateEvent(viewModel.Event);
+            await _eventService.UpdateEventAsync(viewModel.Event);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public IActionResult Delete(Guid id)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            _eventService.DeleteEvent(id);
+            await _eventService.DeleteEventAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public IActionResult CreateEvent(CreateEventViewModel viewModel)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateEvent(CreateEventViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 viewModel.AvailableImages = _imageService.GetAvailableImages();
                 return View("Create", viewModel);
             }
-            _eventService.AddEvent(viewModel.Event);
+            await _eventService.AddEventAsync(viewModel.Event);
             return RedirectToAction(nameof(Index));
         }
     }

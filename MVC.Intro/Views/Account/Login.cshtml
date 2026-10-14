@@ -1,4 +1,5 @@
 @model LoginViewModel
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment env
 @{
     ViewData["Title"] = "Вход";
 }
@@ -29,11 +30,14 @@
                         </div>
                         <button type="submit" class="btn tickets-btn-primary w-100">Влез</button>
                     </form>
-                    <div class="tickets-demo mt-4">
-                        <strong>Демо акаунт</strong>
-                        <span>Имейл: tickets@fan.com</span>
-                        <span>Парола: Tickets123!</span>
-                    </div>
+                    @if (env.IsDevelopment())
+                    {
+                        <div class="tickets-demo mt-4">
+                            <strong>Демо акаунт</strong>
+                            <span>Имейл: tickets@fan.com</span>
+                            <span>Парола: Tickets123!</span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

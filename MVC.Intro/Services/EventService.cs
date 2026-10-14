@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MVC.Intro.Data;
 using MVC.Intro.Models;
 
@@ -15,21 +16,18 @@ namespace MVC.Intro.Services
             _logger = logger;
             _context = context;
         }
-        public List<Event> GetAllEvents()
+
+        public async Task<List<Event>> GetAllEventsAsync()
         {
-            return _context.Events.ToList();
-        }
-        public Event GetEventById(Guid id)
-        {
-            var @event = _context.Events.FirstOrDefault(e => e.Id == id);
-            if (@event == null)
-            {
-                throw new ArgumentNullException("Event not found");
-            }
-            return @event;
+            return await _context.Events.ToListAsync();
         }
 
-        public Event AddEvent(Event @event)
+        public async Task<Event?> GetEventByIdAsync(Guid id)
+        {
+            return await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<Event> AddEventAsync(Event @event)
         {
             var toAdd = new Event
             {
@@ -44,36 +42,33 @@ namespace MVC.Intro.Services
                 Description = @event.Description
             };
             _logger.LogInformation("Adding event: {EventName} with price {EventPrice}", toAdd.Name, toAdd.Price);
-            if (@event == null)
-            {
-                throw new ArgumentNullException("Event is null");
-            }
             toAdd.Id = Guid.NewGuid();
             if (!toAdd.Name.StartsWith(EventPrefix))
             {
                 DecorateEventName(toAdd);
             }
             _context.Events.Add(toAdd);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return toAdd;
         }
-        public void DeleteEvent(Guid id)
+
+        public async Task DeleteEventAsync(Guid id)
         {
-            var @event = _context.Events.FirstOrDefault(e => e.Id == id);
+            var @event = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
             if (@event == null)
             {
-                throw new ArgumentNullException("Event not found");
+                return;
             }
             _context.Events.Remove(@event);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void UpdateEvent(Event @event)
+        public async Task UpdateEventAsync(Event @event)
         {
-            var existing = _context.Events.FirstOrDefault(e => e.Id == @event.Id);
+            var existing = await _context.Events.FirstOrDefaultAsync(e => e.Id == @event.Id);
             if (existing == null)
             {
-                throw new ArgumentNullException("Event not found");
+                return;
             }
             existing.Name = @event.Name;
             existing.Price = @event.Price;
@@ -84,13 +79,12 @@ namespace MVC.Intro.Services
             existing.Capacity = @event.Capacity;
             existing.AvailableTickets = @event.AvailableTickets;
             existing.Description = @event.Description;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         private void DecorateEventName(Event @event)
         {
             @event.Name = EventPrefix + @event.Name;
         }
-
     }
 }

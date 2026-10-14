@@ -14,9 +14,9 @@ namespace MVC.Intro.Controllers
             _eventService = eventService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var events = _eventService.GetAllEvents()
+            var events = (await _eventService.GetAllEventsAsync())
                 .Select(@event =>
                 {
                     var catalog = EventCatalog.Get(@event.Name);
@@ -39,9 +39,14 @@ namespace MVC.Intro.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(int? statusCode = null)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var model = new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                StatusCode = statusCode
+            };
+            return View(model);
         }
     }
 }

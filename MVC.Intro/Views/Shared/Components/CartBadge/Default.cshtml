@@ -1,5 +1,8 @@
 @model int
-<a class="nav-link psg-cart-link" asp-controller="Cart" asp-action="Index">
+<a class="nav-link tickets-cart-link" asp-controller="Cart" asp-action="Index">
     🛒 Количка
-    <span class="psg-badge">@Model</span>
+    @if (Model > 0)
+    {
+        <span class="tickets-badge">@Model</span>
+    }
 </a>
