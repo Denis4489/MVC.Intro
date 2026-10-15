@@ -67,11 +67,30 @@ namespace MVC.Intro.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(CreateEventViewModel viewModel)
         {
+            // Remove UploadedImage from ModelState so its absence doesn't fail validation
+            ModelState.Remove(nameof(viewModel.UploadedImage));
+
             if (!ModelState.IsValid)
             {
                 viewModel.AvailableImages = _imageService.GetAvailableImages();
                 return View("Edit", viewModel);
             }
+
+            // If a file was uploaded, save it and overwrite the ImageUrl
+            if (viewModel.UploadedImage != null && viewModel.UploadedImage.Length > 0)
+            {
+                try
+                {
+                    viewModel.Event.ImageUrl = await _imageService.SaveUploadedImageAsync(viewModel.UploadedImage);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(nameof(viewModel.UploadedImage), ex.Message);
+                    viewModel.AvailableImages = _imageService.GetAvailableImages();
+                    return View("Edit", viewModel);
+                }
+            }
+
             await _eventService.UpdateEventAsync(viewModel.Event);
             return RedirectToAction(nameof(Index));
         }

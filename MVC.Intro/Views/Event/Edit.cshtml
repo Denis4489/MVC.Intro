@@ -7,12 +7,13 @@
 <section class="tickets-section">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <div class="tickets-card-bg">
                     <h1 class="tickets-title">Редактиране на събитие</h1>
-                    <form asp-action="EditEvent">
+                    <form asp-action="EditEvent" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="Event.Id" />
+
                         <div class="mb-3">
                             <label asp-for="Event.Name" class="form-label"></label>
                             <input asp-for="Event.Name" class="form-control tickets-input" />
@@ -53,27 +54,82 @@
                             <textarea asp-for="Event.Description" class="form-control tickets-input" rows="3"></textarea>
                             <span asp-validation-for="Event.Description" class="text-danger"></span>
                         </div>
-                        <div class="mb-3">
-                            <label asp-for="Event.ImageUrl" class="form-label">Снимка</label>
-                            <select asp-for="Event.ImageUrl" class="form-control tickets-input">
-                                <option value="">-- Без снимка --</option>
-                                @foreach (var image in Model.AvailableImages)
-                                {
-                                    <option value="@image">@image.Replace("/images/", "")</option>
-                                }
-                            </select>
-                            <span asp-validation-for="Event.ImageUrl" class="text-danger"></span>
-                            @if (Model.AvailableImages.Count == 0)
-                            {
-                                <small class="text-danger">Няма налични снимки в папка wwwroot/images</small>
-                            }
-                            else
-                            {
-                                <small class="text-muted">Налични снимки: @Model.AvailableImages.Count</small>
-                            }
+
+                        @* ── IMAGE SECTION ──────────────────────────────────── *@
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Снимка на събитието</label>
+
+                            @* Current image preview *@
+                            <div id="img-preview-wrap" class="mb-3 @(string.IsNullOrEmpty(Model.Event.ImageUrl) ? "d-none" : "")">
+                                <p class="tickets-muted mb-1" style="font-size:.78rem">Текуща снимка:</p>
+                                <img id="img-preview"
+                                     src="@Model.Event.ImageUrl"
+                                     alt="Преглед"
+                                     class="tickets-img-preview" />
+                            </div>
+
+                            @* Tab switcher *@
+                            <div class="tickets-img-tabs mb-3" role="group">
+                                <button type="button" class="tickets-img-tab active" id="tab-existing" onclick="switchTab('existing')">
+                                    📂 Избери от галерия
+                                </button>
+                                <button type="button" class="tickets-img-tab" id="tab-upload" onclick="switchTab('upload')">
+                                    ⬆️ Качи нова снимка
+                                </button>
+                            </div>
+
+                            @* Panel: pick from existing *@
+                            <div id="panel-existing">
+                                <select asp-for="Event.ImageUrl"
+                                        id="select-image"
+                                        class="form-control tickets-input"
+                                        onchange="onSelectImage(this.value)">
+                                    <option value="">-- Без снимка --</option>
+                                    @foreach (var image in Model.AvailableImages)
+                                    {
+                                        var fileName = System.IO.Path.GetFileName(image);
+                                        if (Model.Event.ImageUrl == image)
+                                        {
+                                            <option value="@image" selected="selected">@fileName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@image">@fileName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="Event.ImageUrl" class="text-danger"></span>
+                                <small class="tickets-muted">
+                                    @(Model.AvailableImages.Count == 0
+                                        ? "Няма снимки в wwwroot/images"
+                                        : $"{Model.AvailableImages.Count} снимки налични")
+                                </small>
+                            </div>
+
+                            @* Panel: upload new *@
+                            <div id="panel-upload" class="d-none">
+                                <div class="tickets-upload-zone" id="upload-zone">
+                                    <input type="file"
+                                           asp-for="UploadedImage"
+                                           id="file-input"
+                                           accept=".jpg,.jpeg,.png,.gif,.webp"
+                                           class="tickets-upload-input"
+                                           onchange="onFileChosen(this)" />
+                                    <label for="file-input" class="tickets-upload-label">
+                                        <span class="tickets-upload-icon">🖼️</span>
+                                        <span id="upload-hint">Кликни или пусни снимка тук</span>
+                                        <small class="tickets-muted">JPG, PNG, GIF, WEBP · до 5 MB</small>
+                                    </label>
+                                </div>
+                                <span asp-validation-for="UploadedImage" class="text-danger"></span>
+                            </div>
                         </div>
-                        <button type="submit" class="btn tickets-btn-primary">Запази</button>
-                        <a class="btn tickets-btn-ghost" asp-action="Index">Назад</a>
+                        @* ─────────────────────────────────────────────────────── *@
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn tickets-btn-primary">Запази</button>
+                            <a class="btn tickets-btn-ghost" asp-action="Index">Назад</a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -83,4 +139,68 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // ── Tab switcher ──────────────────────────────────────────────
+        function switchTab(tab) {
+            const isExisting = tab === 'existing';
+            document.getElementById('panel-existing').classList.toggle('d-none', !isExisting);
+            document.getElementById('panel-upload').classList.toggle('d-none', isExisting);
+            document.getElementById('tab-existing').classList.toggle('active', isExisting);
+            document.getElementById('tab-upload').classList.toggle('active', !isExisting);
+
+            if (isExisting) {
+                document.getElementById('file-input').value = '';
+                document.getElementById('upload-hint').textContent = 'Кликни или пусни снимка тук';
+            }
+        }
+
+        // ── Preview on gallery select ─────────────────────────────────
+        function onSelectImage(url) {
+            const wrap = document.getElementById('img-preview-wrap');
+            const img  = document.getElementById('img-preview');
+            if (url) {
+                img.src = url;
+                wrap.classList.remove('d-none');
+            } else {
+                wrap.classList.add('d-none');
+            }
+        }
+
+        // ── Preview on file pick ──────────────────────────────────────
+        function onFileChosen(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            document.getElementById('upload-hint').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const wrap = document.getElementById('img-preview-wrap');
+                const img  = document.getElementById('img-preview');
+                img.src = e.target.result;
+                wrap.classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ── Drag-and-drop ─────────────────────────────────────────────
+        const zone = document.getElementById('upload-zone');
+        if (zone) {
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const dt = e.dataTransfer;
+                if (dt.files && dt.files[0]) {
+                    const input = document.getElementById('file-input');
+                    const transfer = new DataTransfer();
+                    transfer.items.add(dt.files[0]);
+                    input.files = transfer.files;
+                    onFileChosen(input);
+                    switchTab('upload');
+                }
+            });
+        }
+    </script>
 }

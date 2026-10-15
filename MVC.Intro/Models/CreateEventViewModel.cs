@@ -7,6 +7,13 @@ namespace MVC.Intro.Models
         public Event Event { get; set; } = new() { Name = "", Venue = "", TicketType = "" };
         public List<string> AvailableImages { get; set; } = new();
 
+        /// <summary>
+        /// Optional file upload. When provided, it takes priority over Event.ImageUrl
+        /// (the controller saves the file and overwrites ImageUrl).
+        /// </summary>
+        [Display(Name = "Качи нова снимка")]
+        public IFormFile? UploadedImage { get; set; }
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Event != null && Event.AvailableTickets > Event.Capacity)
