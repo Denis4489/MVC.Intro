@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MVC.Intro.Data;
 using MVC.Intro.Services;
+using QRCoder;
+using QuestPDF;
+
 
 namespace MVC.Intro
 {
