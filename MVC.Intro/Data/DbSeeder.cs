@@ -22,7 +22,7 @@ namespace MVC.Intro.Data
                     TicketType = "Standard",
                     Capacity = 53000,
                     AvailableTickets = 48000,
-                    Description = "Елесно дерби на Етихад"
+                    Description = "Дерби на Етихад"
                 },
                 new Event
                 {

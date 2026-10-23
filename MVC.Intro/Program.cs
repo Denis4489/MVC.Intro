@@ -16,6 +16,7 @@ namespace MVC.Intro
             builder.Services.AddScoped<EventService>();
             builder.Services.AddScoped<CartService>();
             builder.Services.AddScoped<ImageService>();
+            builder.Services.AddScoped<TicketPdfService>();
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddDistributedMemoryCache();

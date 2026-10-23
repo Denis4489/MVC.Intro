@@ -1,14 +1,110 @@
+@model MVC.Intro.Models.OrderConfirmationViewModel
 @{
-    ViewData["Title"] = "Поръчката е приета";
+    ViewData["Title"] = "Поръчката е завършена - Електронен билет";
 }
 
 <section class="tickets-section">
     <div class="container">
-        <div class="tickets-card text-center py-5 tickets-success">
-            <div class="tickets-crest mx-auto mb-3" style="font-size: 3rem;">🎫</div>
-            <h1 class="tickets-title">Благодарим ти!</h1>
-            <p class="tickets-muted">Поръчката е приета. Артикули: @ViewBag.ItemCount · Сума: @(((decimal)ViewBag.Total).ToString("0.00")) €</p>
-            <a class="btn tickets-btn-primary mt-3" asp-controller="Home" asp-action="Index">Обратно в магазина</a>
+        <!-- Order Success Hero Card -->
+        <div class="tickets-card p-4 p-md-5 mb-4 text-center">
+            <div class="tickets-crest mx-auto mb-3" style="font-size: 3.5rem;">🎉</div>
+            <p class="tickets-kicker">Успешно плащане и резервация</p>
+            <h1 class="tickets-title mb-2">Благодарим ти за поръчката!</h1>
+            <p class="tickets-muted fs-5 mb-3">
+                Твоят електронен билет с QR код е готов. Можеш да го свалиш в PDF формат или да го представиш директно от екрана.
+            </p>
+
+            <div class="d-inline-flex flex-wrap gap-2 justify-content-center align-items-center bg-dark bg-opacity-50 px-4 py-2 rounded-pill border border-white border-opacity-10 mb-4">
+                <span>Поръчка: <strong class="text-warning">#@Model.OrderId</strong></span>
+                <span class="opacity-50">|</span>
+                <span>Клиент: <strong>@Model.CustomerName</strong></span>
+                <span class="opacity-50">|</span>
+                <span>Общо: <strong class="text-warning">@Model.TotalAmount.ToString("0.00") €</strong> (@Model.TotalItems бр.)</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a class="btn btn-lg tickets-btn-primary px-4 py-2 shadow" asp-action="DownloadTicketPdf" asp-route-orderId="@Model.OrderId">
+                    📄 Изтегли PDF Билет
+                </a>
+                <a class="btn btn-lg tickets-btn-ghost px-4 py-2" asp-action="ViewTicketPdf" asp-route-orderId="@Model.OrderId" target="_blank">
+                    👁️ Отвори PDF в нов раздел
+                </a>
+                <a class="btn btn-lg tickets-btn-ghost px-3 py-2" asp-controller="Home" asp-action="Index">
+                    🛒 Към събитията
+                </a>
+            </div>
+        </div>
+
+        <!-- Ticket Cards Section -->
+        <div class="mb-5">
+            <h3 class="mb-3 text-uppercase fs-4">Твоите закупени билети</h3>
+            <div class="row g-4">
+                @foreach (var ticket in Model.Tickets)
+                {
+                    <div class="col-lg-6">
+                        <div class="tickets-card p-3 p-md-4 h-100 position-relative overflow-hidden" style="background: linear-gradient(145deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border: 1px solid rgba(255,255,255,0.12);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary px-3 py-1 text-uppercase">@ticket.Category</span>
+                                <span class="badge bg-warning text-dark px-3 py-1 text-uppercase fw-bold">@ticket.TicketType</span>
+                            </div>
+
+                            <h4 class="fw-bold mb-3 text-white">@ticket.EventName</h4>
+
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <div class="d-flex flex-column gap-2 text-white-50 small mb-3">
+                                        <div>
+                                            <span class="text-white fw-semibold">📍 Място:</span> @ticket.Venue
+                                        </div>
+                                        <div>
+                                            <span class="text-white fw-semibold">📅 Дата:</span> @(ticket.EventDate != default ? ticket.EventDate.ToString("dd.MM.yyyy HH:mm") : "По график") ч.
+                                        </div>
+                                        <div>
+                                            <span class="text-white fw-semibold">👥 Количество:</span> <span class="text-white fw-bold">@ticket.Quantity бр.</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-white fw-semibold">💰 Цена:</span> @ticket.UnitPrice.ToString("0.00") € (Общо: <strong class="text-warning">@ticket.TotalPrice.ToString("0.00") €</strong>)
+                                        </div>
+                                    </div>
+                                    <div class="small text-muted font-monospace">
+                                        Код: @ticket.TicketCode
+                                    </div>
+                                </div>
+
+                                <div class="col-5 text-center">
+                                    <div class="bg-white p-2 rounded-3 shadow d-inline-block">
+                                        <img src="@ticket.QrCodeBase64" alt="QR Код за билет" style="width: 120px; height: 120px; display: block;" />
+                                    </div>
+                                    <div class="mt-2 text-warning small fw-bold text-uppercase" style="font-size: 0.72rem;">
+                                        ⚡ Сканирай за вход
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Embedded Live PDF Viewer Section -->
+        <div class="tickets-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="m-0 fs-5">📄 Преглед на официалния PDF билет</h3>
+                    <small class="tickets-muted">Генериран автоматично с уникален QR код за верификация</small>
+                </div>
+                <a class="btn btn-sm tickets-btn-primary" asp-action="DownloadTicketPdf" asp-route-orderId="@Model.OrderId">
+                    Изтегли PDF
+                </a>
+            </div>
+
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow" style="min-height: 480px;">
+                <iframe src="@Url.Action("ViewTicketPdf", "Cart", new { orderId = Model.OrderId })" 
+                        title="PDF Билет"
+                        style="width: 100%; height: 100%; border: 0; background: #ffffff;">
+                </iframe>
+            </div>
         </div>
     </div>
 </section>
