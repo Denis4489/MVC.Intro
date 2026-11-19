@@ -30,6 +30,7 @@ namespace MVC.Intro.Data
         }
 
         public DbSet<Event> Events { get; set; } = null!;
+        public DbSet<OrderRecord> Orders { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {

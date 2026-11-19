@@ -4,9 +4,8 @@ namespace MVC.Intro.Models
 {
     public class LoginViewModel
     {
-        [Display(Name = "Имейл")]
-        [Required(ErrorMessage = "Въведете имейл")]
-        [EmailAddress(ErrorMessage = "Невалиден имейл")]
+        [Display(Name = "Имейл или потребителско име")]
+        [Required(ErrorMessage = "Въведете имейл или потребителско име")]
         public string Email { get; set; } = string.Empty;
 
         [Display(Name = "Парола")]

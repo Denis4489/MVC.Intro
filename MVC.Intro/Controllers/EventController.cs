@@ -34,7 +34,7 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var viewModel = new CreateEventViewModel
@@ -45,7 +45,7 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var @event = await _eventService.GetEventByIdAsync(id);
@@ -63,7 +63,7 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(CreateEventViewModel viewModel)
         {
@@ -96,7 +96,7 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -105,7 +105,7 @@ namespace MVC.Intro.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEvent(CreateEventViewModel viewModel)
         {

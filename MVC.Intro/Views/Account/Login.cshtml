@@ -16,7 +16,7 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control tickets-input" autocomplete="username" />
+                            <input asp-for="Email" type="text" class="form-control tickets-input" autocomplete="username" placeholder="admin@tickets.com или admin" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
@@ -40,9 +40,17 @@
                     @if (env.IsDevelopment())
                     {
                         <div class="tickets-demo mt-4">
-                            <strong>Демо акаунт</strong>
-                            <span>Имейл: tickets@fan.com</span>
-                            <span>Парола: Tickets123!</span>
+                            <strong>Демо акаунти</strong>
+                            <div class="mb-2">
+                                <span class="badge bg-warning text-dark">Администратор (пълни права за промени)</span><br />
+                                <span>Потребител: <code>admin@tickets.com</code> или <code>admin</code></span><br />
+                                <span>Парола: <code>123admin</code></span>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary">Обикновен потребител</span><br />
+                                <span>Потребител: <code>tickets@fan.com</code></span><br />
+                                <span>Парола: <code>Tickets123!</code></span>
+                            </div>
                         </div>
                     }
                 </div>

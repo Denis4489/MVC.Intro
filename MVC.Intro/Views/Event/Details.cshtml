@@ -34,6 +34,10 @@
                     <form asp-controller="Cart" asp-action="Add" method="post">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button class="btn tickets-btn-primary" type="submit">🛒 Добави в количка</button>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="btn tickets-btn-ghost" asp-action="Edit" asp-route-id="@Model.Id">Редактирай</a>
+                        }
                         <a class="btn tickets-btn-ghost" asp-action="Index">Назад</a>
                     </form>
                 </div>

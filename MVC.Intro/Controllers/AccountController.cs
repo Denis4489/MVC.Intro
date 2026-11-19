@@ -15,7 +15,8 @@ namespace MVC.Intro.Controllers
         private static readonly HashSet<string> AdminEmails = new(StringComparer.OrdinalIgnoreCase)
         {
             "admin@tickets.com",
-            "administrator@tickets.com"
+            "administrator@tickets.com",
+            "admin"
         };
 
         public AccountController(IConfiguration configuration)
@@ -71,21 +72,59 @@ namespace MVC.Intro.Controllers
                 return View(model);
             }
 
+            var adminEmail = _configuration["Admin:Email"] ?? "admin@tickets.com";
+            var adminPassword = _configuration["Admin:Password"] ?? "123admin";
+
             var demoEmail = _configuration["Demo:Email"] ?? "tickets@fan.com";
             var demoPassword = _configuration["Demo:Password"] ?? "Tickets123!";
 
-            if (!string.Equals(model.Email, demoEmail, StringComparison.OrdinalIgnoreCase)
-                || model.Password != demoPassword)
+            var input = (model.Email ?? string.Empty).Trim();
+            bool isAdminIdentifier = input.Equals("admin", StringComparison.OrdinalIgnoreCase)
+                                     || AdminEmails.Contains(input)
+                                     || string.Equals(input, adminEmail, StringComparison.OrdinalIgnoreCase);
+
+            string effectiveEmail;
+            string role;
+
+            if (isAdminIdentifier || model.Password == adminPassword)
+            {
+                if (model.Password != adminPassword)
+                {
+                    ModelState.AddModelError(string.Empty, "Невалидна парола за администратор.");
+                    return View(model);
+                }
+
+                effectiveEmail = input.Contains('@') ? input : adminEmail;
+                role = "Admin";
+            }
+            else if (string.Equals(input, demoEmail, StringComparison.OrdinalIgnoreCase) || model.Password == demoPassword)
+            {
+                if (string.Equals(input, demoEmail, StringComparison.OrdinalIgnoreCase) && model.Password != demoPassword)
+                {
+                    ModelState.AddModelError(string.Empty, "Невалиден имейл или парола.");
+                    return View(model);
+                }
+
+                effectiveEmail = input.Contains('@') ? input : demoEmail;
+                role = "User";
+            }
+            else
             {
                 ModelState.AddModelError(string.Empty, "Невалиден имейл или парола.");
                 return View(model);
             }
 
+            var displayName = !string.IsNullOrWhiteSpace(model.DisplayName)
+                ? model.DisplayName.Trim()
+                : (role == "Admin" && (input.Equals("admin", StringComparison.OrdinalIgnoreCase) || input.Equals(adminEmail, StringComparison.OrdinalIgnoreCase)))
+                    ? "Администратор"
+                    : ResolveDisplayName(effectiveEmail, null);
+
             var claims = new List<Claim>
             {
-                new(ClaimTypes.Name,  ResolveDisplayName(demoEmail, model.DisplayName)),
-                new(ClaimTypes.Email, demoEmail),
-                new(ClaimTypes.Role,  ResolveRole(demoEmail))
+                new(ClaimTypes.Name,  displayName),
+                new(ClaimTypes.Email, effectiveEmail),
+                new(ClaimTypes.Role,  role)
             };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var properties = new AuthenticationProperties
@@ -104,6 +143,13 @@ namespace MVC.Intro.Controllers
                 return Redirect(returnUrl);
             }
 
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            TempData["Notice"] = "Нямате достъп. Тази операция изисква администраторски профил.";
             return RedirectToAction("Index", "Home");
         }
 

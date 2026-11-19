@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MVC.Intro.Models;
 
 namespace MVC.Intro.Data
@@ -143,6 +144,126 @@ namespace MVC.Intro.Data
             }
 
             db.SaveChanges();
+
+            // Create Orders table if not exists and seed sample orders
+            db.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""Orders"" (
+                    ""Id"" TEXT NOT NULL CONSTRAINT ""PK_Orders"" PRIMARY KEY,
+                    ""OrderNumber"" TEXT NOT NULL,
+                    ""OrderDate"" TEXT NOT NULL,
+                    ""CustomerName"" TEXT NOT NULL,
+                    ""CustomerEmail"" TEXT NULL,
+                    ""TotalAmount"" TEXT NOT NULL,
+                    ""TotalItems"" INTEGER NOT NULL,
+                    ""TicketsSummary"" TEXT NULL
+                );");
+
+            if (!db.Orders.Any())
+            {
+                var today = DateTime.Today;
+                db.Orders.AddRange(
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261115-A101",
+                        OrderDate = today.AddDays(-4).AddHours(14).AddMinutes(20),
+                        CustomerName = "Димитър Бербатов",
+                        CustomerEmail = "berbo@football.bg",
+                        TotalAmount = 150.00m,
+                        TotalItems = 2,
+                        TicketsSummary = "Manchester City vs Liverpool (2 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261116-B202",
+                        OrderDate = today.AddDays(-3).AddHours(10).AddMinutes(15),
+                        CustomerName = "Христо Стоичков",
+                        CustomerEmail = "hristo@barca.bg",
+                        TotalAmount = 240.00m,
+                        TotalItems = 2,
+                        TicketsSummary = "Real Madrid vs Barcelona (2 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261117-C301",
+                        OrderDate = today.AddDays(-2).AddHours(11).AddMinutes(5),
+                        CustomerName = "Георги Иванов",
+                        CustomerEmail = "georgi@fan.com",
+                        TotalAmount = 130.00m,
+                        TotalItems = 2,
+                        TicketsSummary = "Chelsea vs Arsenal (2 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261117-C302",
+                        OrderDate = today.AddDays(-2).AddHours(13).AddMinutes(40),
+                        CustomerName = "Мария Петрова",
+                        CustomerEmail = "maria@test.bg",
+                        TotalAmount = 80.00m,
+                        TotalItems = 1,
+                        TicketsSummary = "Bayern Munich vs Borussia Dortmund (1 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261117-C303",
+                        OrderDate = today.AddDays(-2).AddHours(16).AddMinutes(25),
+                        CustomerName = "Николай Димитров",
+                        CustomerEmail = "niki@fan.bg",
+                        TotalAmount = 180.00m,
+                        TotalItems = 3,
+                        TicketsSummary = "Juventus vs AC Milan (3 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261117-C304",
+                        OrderDate = today.AddDays(-2).AddHours(18).AddMinutes(50),
+                        CustomerName = "Стефан Попов",
+                        CustomerEmail = "stefan@mail.bg",
+                        TotalAmount = 120.00m,
+                        TotalItems = 1,
+                        TicketsSummary = "Real Madrid vs Barcelona (1 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261118-D401",
+                        OrderDate = today.AddDays(-1).AddHours(12).AddMinutes(10),
+                        CustomerName = "Александър Тодоров",
+                        CustomerEmail = "alex@fan.com",
+                        TotalAmount = 90.00m,
+                        TotalItems = 2,
+                        TicketsSummary = "Borussia Dortmund vs Schalke (2 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261118-D402",
+                        OrderDate = today.AddDays(-1).AddHours(15).AddMinutes(35),
+                        CustomerName = "Елена Василева",
+                        CustomerEmail = "elena@tickets.bg",
+                        TotalAmount = 110.00m,
+                        TotalItems = 2,
+                        TicketsSummary = "Atletico Madrid vs Real Madrid (2 бр.)"
+                    },
+                    new OrderRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = "TKT-20261119-E501",
+                        OrderDate = today.AddHours(9).AddMinutes(15),
+                        CustomerName = "Петър Стоянов",
+                        CustomerEmail = "petar@fan.com",
+                        TotalAmount = 75.00m,
+                        TotalItems = 1,
+                        TicketsSummary = "Manchester City vs Liverpool (1 бр.)"
+                    }
+                );
+                db.SaveChanges();
+            }
         }
     }
 }

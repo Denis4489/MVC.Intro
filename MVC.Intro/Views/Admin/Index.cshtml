@@ -1,0 +1,241 @@
+@model MVC.Intro.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Административен панел";
+}
+
+<section class="tickets-section">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+            <div>
+                <p class="tickets-kicker">👑 Административен панел</p>
+                <h1 class="tickets-title">Статистика и Поръчки</h1>
+                <small class="tickets-muted">Пълен преглед на продажбите и натовареността на системата</small>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn tickets-btn-primary" asp-controller="Event" asp-action="Create">➕ Ново събитие</a>
+                <a class="btn tickets-btn-ghost" asp-controller="Event" asp-action="Index">📋 Каталог събития</a>
+            </div>
+        </div>
+
+        <!-- 4 Key Metric Cards -->
+        <div class="row g-3 mb-4">
+            <!-- 1. Total Orders -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="tickets-card p-3 p-xl-4 h-100" style="border-left: 4px solid var(--tickets-primary);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="tickets-kicker m-0">Общо поръчки</span>
+                        <span class="fs-4">📦</span>
+                    </div>
+                    <div class="display-6 fw-bold text-white mb-1">@Model.TotalOrdersCount</div>
+                    <small class="tickets-muted">Регистрирани в системата</small>
+                </div>
+            </div>
+
+            <!-- 2. Peak Day (Requested requirement) -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="tickets-card p-3 p-xl-4 h-100 position-relative overflow-hidden" 
+                     style="border-left: 4px solid var(--tickets-accent); background: linear-gradient(145deg, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.95));">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="tickets-kicker m-0" style="color: var(--tickets-accent);">🏆 Най-силен ден</span>
+                        <span class="fs-4">🔥</span>
+                    </div>
+                    @if (Model.PeakDay != null)
+                    {
+                        <div class="fs-3 fw-bold text-warning mb-1">
+                            @Model.PeakDay.OrderCount <span class="fs-6 text-white-50">поръчки</span>
+                        </div>
+                        <small class="text-white fw-semibold d-block text-truncate" title="@Model.PeakDay.FormattedDate">
+                            @Model.PeakDay.FormattedDate
+                        </small>
+                    }
+                    else
+                    {
+                        <div class="fs-4 fw-bold text-white-50">Няма данни</div>
+                        <small class="tickets-muted">Все още няма поръчки</small>
+                    }
+                </div>
+            </div>
+
+            <!-- 3. Total Revenue -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="tickets-card p-3 p-xl-4 h-100" style="border-left: 4px solid #10b981;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="tickets-kicker m-0" style="color: #34d399;">Общи приходи</span>
+                        <span class="fs-4">💰</span>
+                    </div>
+                    <div class="display-6 fw-bold text-white mb-1">@Model.TotalRevenue.ToString("0.00") €</div>
+                    <small class="tickets-muted">Оборот от всички продажби</small>
+                </div>
+            </div>
+
+            <!-- 4. Total Tickets Sold -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="tickets-card p-3 p-xl-4 h-100" style="border-left: 4px solid #8b5cf6;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="tickets-kicker m-0" style="color: #a78bfa;">Продадени билети</span>
+                        <span class="fs-4">🎫</span>
+                    </div>
+                    <div class="display-6 fw-bold text-white mb-1">@Model.TotalTicketsSold</div>
+                    <small class="tickets-muted">Издадени билета с QR код</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Highlight Callout Banner for Peak Day -->
+        @if (Model.PeakDay != null)
+        {
+            <div class="tickets-card-bg mb-4 p-4 border border-warning border-opacity-25" 
+                 style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark px-3 py-1 fw-bold text-uppercase">Пиков ден на поръчки</span>
+                            <span class="text-white-50">· Анализ на трафика</span>
+                        </div>
+                        <h3 class="mb-1 text-white">
+                            Най-много поръчки са направени на <span class="text-warning">@Model.PeakDay.FormattedDate</span>
+                        </h3>
+                        <p class="m-0 text-white-50">
+                            В този ден са отчетени <strong>@Model.PeakDay.OrderCount поръчки</strong> с общо <strong>@Model.PeakDay.TicketsCount билета</strong> на стойност <strong>@Model.PeakDay.Revenue.ToString("0.00") €</strong>.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="d-inline-flex flex-column align-items-md-end bg-dark bg-opacity-50 px-4 py-2 rounded-3 border border-white border-opacity-10">
+                            <span class="small text-white-50">Дневен дял от поръчките</span>
+                            <strong class="fs-3 text-warning">
+                                @(Model.TotalOrdersCount > 0 ? ((Model.PeakDay.OrderCount * 100.0) / Model.TotalOrdersCount).ToString("0.0") : "0")%
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Breakdown by Day Table -->
+        <div class="tickets-card-bg p-0 overflow-hidden mb-5">
+            <div class="p-3 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                <h3 class="m-0 fs-5 text-uppercase">📅 Активност на поръчките по дни</h3>
+                <small class="tickets-muted">Сравнение спрямо пиковия ден</small>
+            </div>
+            @if (!Model.OrdersByDay.Any())
+            {
+                <div class="text-center py-4 text-muted">Няма регистрирани поръчки по дни.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table tickets-table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Брой поръчки</th>
+                                <th style="width: 35%;">Натовареност (спрямо пика)</th>
+                                <th>Билети</th>
+                                <th class="text-end">Сума (€)</th>
+                                <th class="text-center">Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var day in Model.OrdersByDay)
+                            {
+                                <tr class="@(day.IsPeakDay ? "table-active" : "")" style="@(day.IsPeakDay ? "background-color: rgba(245, 158, 11, 0.08) !important;" : "")">
+                                    <td>
+                                        <strong>@day.FormattedDate</strong>
+                                    </td>
+                                    <td>
+                                        <span class="fs-6 fw-bold @(day.IsPeakDay ? "text-warning" : "text-white")">
+                                            @day.OrderCount бр.
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress flex-grow-1" style="height: 10px; background-color: rgba(255,255,255,0.1);">
+                                                <div class="progress-bar @(day.IsPeakDay ? "bg-warning" : "bg-primary")" 
+                                                     role="progressbar" 
+                                                     style="width: @day.PercentageOfPeak%;" 
+                                                     aria-valuenow="@day.PercentageOfPeak" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="text-white-50" style="min-width: 42px;">@day.PercentageOfPeak%</small>
+                                        </div>
+                                    </td>
+                                    <td>@day.TicketsCount бр.</td>
+                                    <td class="text-end fw-semibold">@day.Revenue.ToString("0.00") €</td>
+                                    <td class="text-center">
+                                        @if (day.IsPeakDay)
+                                        {
+                                            <span class="badge bg-warning text-dark px-2 py-1 fw-bold">🏆 РЕКОРДЕН ДЕН</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-50 px-2 py-1">Нормален</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <!-- Recent Orders Table -->
+        <div class="tickets-card-bg p-0 overflow-hidden">
+            <div class="p-3 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                <h3 class="m-0 fs-5 text-uppercase">📋 Списък на поръчките</h3>
+                <small class="tickets-muted">Показват се последните записи</small>
+            </div>
+            @if (!Model.RecentOrders.Any())
+            {
+                <div class="text-center py-4 text-muted">Все още няма регистрирани поръчки.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table tickets-table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Номер</th>
+                                <th>Дата и час</th>
+                                <th>Клиент</th>
+                                <th>Закупени билети</th>
+                                <th>Брой</th>
+                                <th class="text-end">Стойност</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-dark border border-white border-opacity-25 font-monospace">
+                                            @order.OrderNumber
+                                        </span>
+                                    </td>
+                                    <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm") ч.</td>
+                                    <td>
+                                        <strong>@order.CustomerName</strong>
+                                        @if (!string.IsNullOrEmpty(order.CustomerEmail))
+                                        {
+                                            <div class="tickets-muted small">@order.CustomerEmail</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 320px;" title="@order.TicketsSummary">
+                                            @order.TicketsSummary
+                                        </div>
+                                    </td>
+                                    <td>@order.TotalItems бр.</td>
+                                    <td class="text-end fw-bold text-warning">@order.TotalAmount.ToString("0.00") €</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>

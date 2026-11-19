@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MVC.Intro.Data;
 using MVC.Intro.Models;
 using MVC.Intro.Services;
 
@@ -13,12 +14,14 @@ namespace MVC.Intro.Controllers
         private readonly CartService _cartService;
         private readonly EventService _eventService;
         private readonly TicketPdfService _ticketPdfService;
+        private readonly AppDbContext _context;
 
-        public CartController(CartService cartService, EventService eventService, TicketPdfService ticketPdfService)
+        public CartController(CartService cartService, EventService eventService, TicketPdfService ticketPdfService, AppDbContext context)
         {
             _cartService = cartService;
             _eventService = eventService;
             _ticketPdfService = ticketPdfService;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -143,6 +146,22 @@ namespace MVC.Intro.Controllers
                     QrCodeBase64 = qrCodeBase64
                 });
             }
+
+            // Save order in database for admin panel and history
+            var summary = string.Join(", ", order.Tickets.Select(t => $"{t.EventName} ({t.Quantity} бр.)"));
+            var orderRecord = new OrderRecord
+            {
+                Id = Guid.NewGuid(),
+                OrderNumber = order.OrderId,
+                OrderDate = order.OrderDate,
+                CustomerName = order.CustomerName,
+                CustomerEmail = order.CustomerEmail,
+                TotalAmount = order.TotalAmount,
+                TotalItems = order.TotalItems,
+                TicketsSummary = summary
+            };
+            _context.Orders.Add(orderRecord);
+            await _context.SaveChangesAsync();
 
             // Save order in session for viewing and downloading
             HttpContext.Session.SetString(LastOrderSessionKey, JsonSerializer.Serialize(order));
