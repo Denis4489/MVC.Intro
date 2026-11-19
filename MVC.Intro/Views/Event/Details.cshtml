@@ -1,47 +1,452 @@
 ﻿@model MVC.Intro.Models.Event
 @{
-    ViewData["Title"] = Model.Name;
+    ViewData["Title"] = $"{Model.Name} - Избор на сектор и билети";
     var catalog = MVC.Intro.Services.EventCatalog.Get(Model.Name);
+    var basePrice = Model.Price;
 }
 
 <section class="tickets-section">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-5">
-                <div class="tickets-card accent-@catalog.Accent">
-                    <div class="tickets-card-art tickets-card-art-lg">
-                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                        {
-                            <img src="@Model.ImageUrl" alt="@Model.Name" class="product-image" />
-                        }
-                        else
-                        {
-                            <span>🎫</span>
-                        }
+        <!-- Event Header Card -->
+        <div class="tickets-card p-4 p-md-5 mb-4">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-primary px-3 py-1 text-uppercase">@catalog.Category</span>
+                        <span class="badge bg-warning text-dark px-3 py-1 text-uppercase fw-bold">@Model.TicketType</span>
+                    </div>
+                    <h1 class="display-6 fw-bold text-white mb-3">@Model.Name</h1>
+                    <p class="tickets-muted fs-5 mb-4">@catalog.Description</p>
+
+                    <div class="d-flex flex-wrap gap-4 text-white-50">
+                        <div>
+                            <span class="text-white fw-semibold d-block">📍 Стадион / Място</span>
+                            @Model.Venue
+                        </div>
+                        <div>
+                            <span class="text-white fw-semibold d-block">📅 Дата и час</span>
+                            @Model.EventDate.ToString("dd MMM yyyy, HH:mm") ч.
+                        </div>
+                        <div>
+                            <span class="text-white fw-semibold d-block">👥 Налични места</span>
+                            @Model.AvailableTickets от @Model.Capacity
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-7">
-                <div class="tickets-card-bg">
-                    <small class="tickets-kicker">@catalog.Category</small>
-                    <h1 class="tickets-title">@Model.Name</h1>
-                    <p>@catalog.Description</p>
-                    <p><strong>Дата:</strong> @Model.EventDate.ToString("dd MMM yyyy, HH:mm")</p>
-                    <p><strong>Място:</strong> @Model.Venue</p>
-                    <p><strong>Тип билет:</strong> @Model.TicketType</p>
-                    <p><strong>Налични билети:</strong> @Model.AvailableTickets / @Model.Capacity</p>
-                    <p class="fs-3 fw-bold">@Model.Price.ToString("0.00") €</p>
-                    <form asp-controller="Cart" asp-action="Add" method="post">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <button class="btn tickets-btn-primary" type="submit">🛒 Добави в количка</button>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a class="btn tickets-btn-ghost" asp-action="Edit" asp-route-id="@Model.Id">Редактирай</a>
-                        }
-                        <a class="btn tickets-btn-ghost" asp-action="Index">Назад</a>
-                    </form>
+
+                <div class="col-lg-5 text-lg-end">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded-4 shadow" style="max-height: 220px; object-fit: cover;" />
+                    }
                 </div>
             </div>
         </div>
+
+        <!-- Stadium Sector Selection Section -->
+        <div class="stadium-card p-4 p-xl-5 mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                <div>
+                    <p class="tickets-kicker m-0">Интерактивна схема на стадиона</p>
+                    <h2 class="fs-3 fw-bold text-white m-0">Изберете сектор за настаняване</h2>
+                    <small class="tickets-muted">Кликнете върху сектор от схемата или го изберете от менюто</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm tickets-btn-ghost" data-bs-toggle="modal" data-bs-target="#stadiumImageModal">
+                        🔍 Уголеми официалната схема
+                    </button>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="btn btn-sm tickets-btn-ghost" asp-action="Edit" asp-route-id="@Model.Id">Редактирай събитие</a>
+                    }
+                </div>
+            </div>
+
+            <!-- Stadium Category Legend -->
+            <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
+                <div class="stadium-legend-item" onclick="selectSector('Сектор 104 (VIP)', 1.4, 'VIP Президентска ложа', '#f59e0b')">
+                    <span class="stadium-color-dot" style="background-color: #f59e0b;"></span>
+                    <span>VIP Ложи (001-003, 104, 801-802)</span>
+                </div>
+                <div class="stadium-legend-item" onclick="selectSector('Сектор 102 (Категория 1)', 1.2, 'Категория 1 - Долен етаж централна трибуна', '#2563eb')">
+                    <span class="stadium-color-dot" style="background-color: #2563eb;"></span>
+                    <span>Кат. 1 - Долен етаж (101-109, 119-124)</span>
+                </div>
+                <div class="stadium-legend-item" onclick="selectSector('Сектор 305 (Категория 2)', 1.15, 'Категория 2 - Среден етаж панорамен изглед', '#f97316')">
+                    <span class="stadium-color-dot" style="background-color: #f97316;"></span>
+                    <span>Кат. 2 - Среден етаж (301-321, 401-415)</span>
+                </div>
+                <div class="stadium-legend-item" onclick="selectSector('Сектор 252 (Източна трибуна)', 0.9, 'Източна трибуна - Гостуващи фенове и агитка', '#065f46')">
+                    <span class="stadium-color-dot" style="background-color: #065f46;"></span>
+                    <span>Източна трибуна (248-260, 451-453)</span>
+                </div>
+                <div class="stadium-legend-item" onclick="selectSector('Сектор 112 (Западна трибуна)', 1.0, 'Западна трибуна - Зад вратата', '#65a30d')">
+                    <span class="stadium-color-dot" style="background-color: #65a30d;"></span>
+                    <span>Западна трибуна (110-113, 233-235)</span>
+                </div>
+                <div class="stadium-legend-item" onclick="selectSector('Сектор 504 (Категория 3)', 0.75, 'Категория 3 - Горен етаж бюджетен сектор', '#881337')">
+                    <span class="stadium-color-dot" style="background-color: #881337;"></span>
+                    <span>Кат. 3 - Горен етаж (501-530)</span>
+                </div>
+            </div>
+
+            <div class="row g-4 align-items-center">
+                <!-- Left Column: Interactive Stadium Scheme -->
+                <div class="col-lg-8">
+                    <div class="stadium-map-box">
+                        <svg class="stadium-svg" viewBox="0 0 880 620" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background Stadium Oval Shadow -->
+                            <ellipse cx="440" cy="310" rx="420" ry="290" fill="#0b1120" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+
+                            <!-- ================= 1. TOP & BOTTOM OUTER MAROON SECTORS (501-530) ================= -->
+                            <!-- Top Maroon Tier (521-530) -->
+                            <path id="sec-521" class="stadium-sector" fill="#881337" d="M 160 140 Q 200 70, 260 55 L 250 110 Q 200 120, 160 140 Z" onclick="selectSector('Сектор 521 (Категория 3)', 0.75, 'Северен горен етаж', '#881337')"><title>Сектор 521</title></path>
+                            <text x="210" y="90" class="stadium-sector-text">521</text>
+
+                            <path id="sec-522" class="stadium-sector" fill="#881337" d="M 260 55 Q 310 40, 360 35 L 355 95 Q 305 100, 250 110 Z" onclick="selectSector('Сектор 522 (Категория 3)', 0.75, 'Северен горен етаж', '#881337')"><title>Сектор 522</title></path>
+                            <text x="310" y="70" class="stadium-sector-text">522</text>
+
+                            <path id="sec-523" class="stadium-sector" fill="#881337" d="M 360 35 Q 410 32, 460 35 L 455 95 Q 405 92, 355 95 Z" onclick="selectSector('Сектор 523 (Категория 3)', 0.75, 'Северен централен горен етаж', '#881337')"><title>Сектор 523</title></path>
+                            <text x="410" y="65" class="stadium-sector-text">523</text>
+
+                            <path id="sec-524" class="stadium-sector" fill="#881337" d="M 460 35 Q 510 40, 560 50 L 550 105 Q 505 95, 455 95 Z" onclick="selectSector('Сектор 524 (Категория 3)', 0.75, 'Северен централен горен етаж', '#881337')"><title>Сектор 524</title></path>
+                            <text x="505" y="70" class="stadium-sector-text">524</text>
+
+                            <path id="sec-802" class="stadium-sector" fill="#f59e0b" d="M 560 50 L 605 60 L 595 115 L 550 105 Z" onclick="selectSector('Сектор 802 (VIP Ложа)', 1.4, 'Северна VIP Ложа', '#f59e0b')"><title>Сектор 802 VIP</title></path>
+                            <text x="578" y="82" class="stadium-sector-text" fill="#0f172a">802</text>
+
+                            <path id="sec-527" class="stadium-sector" fill="#881337" d="M 605 60 Q 660 75, 710 105 L 680 155 Q 640 130, 595 115 Z" onclick="selectSector('Сектор 527 (Категория 3)', 0.75, 'Североизточен горен етаж', '#881337')"><title>Сектор 527</title></path>
+                            <text x="650" y="110" class="stadium-sector-text">527</text>
+
+                            <path id="sec-530" class="stadium-sector" fill="#881337" d="M 710 105 Q 770 145, 805 190 L 735 210 Q 710 180, 680 155 Z" onclick="selectSector('Сектор 530 (Категория 3)', 0.75, 'Източен ъглов горен сектор', '#881337')"><title>Сектор 530</title></path>
+                            <text x="745" y="155" class="stadium-sector-text">530</text>
+
+                            <!-- Bottom Maroon Tier (501-510) -->
+                            <path id="sec-501" class="stadium-sector" fill="#881337" d="M 735 410 L 805 430 Q 770 475, 710 515 L 680 465 Q 710 440, 735 410 Z" onclick="selectSector('Сектор 501 (Категория 3)', 0.75, 'Югоизточен горен сектор', '#881337')"><title>Сектор 501</title></path>
+                            <text x="745" y="465" class="stadium-sector-text">501</text>
+
+                            <path id="sec-502" class="stadium-sector" fill="#881337" d="M 680 465 Q 640 490, 595 505 L 605 560 Q 660 545, 710 515 Z" onclick="selectSector('Сектор 502 (Категория 3)', 0.75, 'Южен горен етаж', '#881337')"><title>Сектор 502</title></path>
+                            <text x="650" y="510" class="stadium-sector-text">502</text>
+
+                            <path id="sec-801" class="stadium-sector" fill="#f59e0b" d="M 550 515 L 595 505 L 605 560 L 560 570 Z" onclick="selectSector('Сектор 801 (VIP Ложа)', 1.4, 'Южна VIP Ложа', '#f59e0b')"><title>Сектор 801 VIP</title></path>
+                            <text x="578" y="538" class="stadium-sector-text" fill="#0f172a">801</text>
+
+                            <path id="sec-504" class="stadium-sector" fill="#881337" d="M 455 525 Q 505 525, 550 515 L 560 570 Q 510 580, 460 585 Z" onclick="selectSector('Сектор 504 (Категория 3)', 0.75, 'Южен централен горен етаж', '#881337')"><title>Сектор 504</title></path>
+                            <text x="505" y="550" class="stadium-sector-text">504</text>
+
+                            <path id="sec-506" class="stadium-sector" fill="#881337" d="M 355 525 Q 405 528, 455 525 L 460 585 Q 410 588, 360 585 Z" onclick="selectSector('Сектор 506 (Категория 3)', 0.75, 'Южен централен горен етаж', '#881337')"><title>Сектор 506</title></path>
+                            <text x="410" y="555" class="stadium-sector-text">506</text>
+
+                            <path id="sec-508" class="stadium-sector" fill="#881337" d="M 250 510 Q 305 520, 355 525 L 360 585 Q 310 580, 260 565 Z" onclick="selectSector('Сектор 508 (Категория 3)', 0.75, 'Южен горен етаж', '#881337')"><title>Сектор 508</title></path>
+                            <text x="310" y="550" class="stadium-sector-text">508</text>
+
+                            <path id="sec-510" class="stadium-sector" fill="#881337" d="M 160 480 Q 200 500, 250 510 L 260 565 Q 200 550, 160 520 Z" onclick="selectSector('Сектор 510 (Категория 3)', 0.75, 'Югозападен горен сектор', '#881337')"><title>Сектор 510</title></path>
+                            <text x="210" y="530" class="stadium-sector-text">510</text>
+
+                            <!-- ================= 2. WEST DEEP VIOLET SECTORS (511-520) ================= -->
+                            <path id="sec-512" class="stadium-sector" fill="#2e1065" d="M 90 420 Q 120 455, 160 480 L 160 520 Q 110 490, 70 440 Z" onclick="selectSector('Сектор 512 (Западен горен)', 0.85, 'Западен сектор - Ултраси', '#312e81')"><title>Сектор 512</title></path>
+                            <text x="120" y="470" class="stadium-sector-text">512</text>
+
+                            <path id="sec-514" class="stadium-sector" fill="#2e1065" d="M 60 340 Q 65 385, 90 420 L 70 440 Q 40 395, 35 340 Z" onclick="selectSector('Сектор 514 (Западен горен)', 0.85, 'Западен сектор - Централен горен', '#312e81')"><title>Сектор 514</title></path>
+                            <text x="55" y="380" class="stadium-sector-text">514</text>
+
+                            <path id="sec-516" class="stadium-sector" fill="#2e1065" d="M 60 280 Q 55 310, 60 340 L 35 340 Q 30 310, 35 280 Z" onclick="selectSector('Сектор 516 (Западен горен)', 0.85, 'Западен сектор - Централен горен', '#312e81')"><title>Сектор 516</title></path>
+                            <text x="45" y="310" class="stadium-sector-text">516</text>
+
+                            <path id="sec-518" class="stadium-sector" fill="#2e1065" d="M 90 200 Q 65 235, 60 280 L 35 280 Q 40 225, 70 180 Z" onclick="selectSector('Сектор 518 (Западен горен)', 0.85, 'Северозападен горен сектор', '#312e81')"><title>Сектор 518</title></path>
+                            <text x="55" y="240" class="stadium-sector-text">518</text>
+
+                            <path id="sec-520" class="stadium-sector" fill="#2e1065" d="M 160 140 Q 120 165, 90 200 L 70 180 Q 110 130, 160 100 Z" onclick="selectSector('Сектор 520 (Западен горен)', 0.85, 'Северозападен горен сектор', '#312e81')"><title>Сектор 520</title></path>
+                            <text x="120" y="150" class="stadium-sector-text">520</text>
+
+                            <!-- ================= 3. EAST DARK EMERALD FAN (248-260, 451-453, 322-325) ================= -->
+                            <path id="sec-250" class="stadium-sector" fill="#065f46" d="M 735 210 Q 770 240, 790 280 L 845 270 Q 820 220, 780 180 Z" onclick="selectSector('Сектор 250 (Източна трибуна)', 0.9, 'Източна трибуна - Гостуващи фенове', '#065f46')"><title>Сектор 250</title></path>
+                            <text x="790" y="235" class="stadium-sector-text">250</text>
+
+                            <path id="sec-322" class="stadium-sector" fill="#065f46" d="M 790 280 Q 800 310, 795 340 L 850 340 Q 855 305, 845 270 Z" onclick="selectSector('Сектор 322 (Източна трибуна)', 0.9, 'Източна трибуна - Център', '#065f46')"><title>Сектор 322</title></path>
+                            <text x="820" y="310" class="stadium-sector-text">322</text>
+
+                            <path id="sec-252" class="stadium-sector" fill="#065f46" d="M 795 340 Q 780 380, 750 410 L 805 440 Q 840 400, 850 340 Z" onclick="selectSector('Сектор 252 (Източна трибуна)', 0.9, 'Източна трибуна - Югоизток', '#065f46')"><title>Сектор 252</title></path>
+                            <text x="800" y="380" class="stadium-sector-text">252</text>
+
+                            <path id="sec-254" class="stadium-sector" fill="#047857" d="M 700 230 Q 730 260, 740 310 L 795 310 Q 785 255, 745 215 Z" onclick="selectSector('Сектор 254 (Източна трибуна)', 0.9, 'Източна трибуна - Долен етаж', '#065f46')"><title>Сектор 254</title></path>
+                            <text x="745" y="270" class="stadium-sector-text">254</text>
+
+                            <path id="sec-256" class="stadium-sector" fill="#047857" d="M 740 310 Q 730 360, 700 390 L 745 405 Q 785 365, 795 310 Z" onclick="selectSector('Сектор 256 (Източна трибуна)', 0.9, 'Източна трибуна - Долен етаж', '#065f46')"><title>Сектор 256</title></path>
+                            <text x="745" y="350" class="stadium-sector-text">256</text>
+
+                            <!-- ================= 4. WEST MID TIER (416-424 CYAN & 110-113 OLIVE) ================= -->
+                            <path id="sec-420" class="stadium-sector" fill="#0f766e" d="M 160 220 Q 140 250, 140 310 L 95 310 Q 95 240, 120 200 Z" onclick="selectSector('Сектор 420 (Западна трибуна)', 0.95, 'Западен среден етаж', '#0f766e')"><title>Сектор 420</title></path>
+                            <text x="125" y="260" class="stadium-sector-text">420</text>
+
+                            <path id="sec-418" class="stadium-sector" fill="#0f766e" d="M 140 310 Q 140 370, 160 400 L 120 420 Q 95 380, 95 310 Z" onclick="selectSector('Сектор 418 (Западна трибуна)', 0.95, 'Западен среден етаж', '#0f766e')"><title>Сектор 418</title></path>
+                            <text x="125" y="360" class="stadium-sector-text">418</text>
+
+                            <!-- Olive Green (110-113) -->
+                            <path id="sec-112" class="stadium-sector" fill="#65a30d" d="M 230 260 L 230 360 L 180 360 L 180 260 Z" onclick="selectSector('Сектор 112 (Западна трибуна)', 1.0, 'Западна трибуна - Първа линия зад вратата', '#65a30d')"><title>Сектор 112</title></path>
+                            <text x="205" y="310" class="stadium-sector-text">112</text>
+
+                            <!-- Sky Blue (114-118) -->
+                            <path id="sec-116" class="stadium-sector" fill="#38bdf8" d="M 230 210 Q 250 170, 290 150 L 270 120 Q 220 145, 195 190 Z" onclick="selectSector('Сектор 116 (Северна трибуна)', 1.1, 'Северна трибуна - Долен етаж', '#38bdf8')"><title>Сектор 116</title></path>
+                            <text x="245" y="165" class="stadium-sector-text" fill="#0f172a">116</text>
+
+                            <!-- ================= 5. MID-TIER ORANGE BANDS (301-321 & 401-415) ================= -->
+                            <!-- Top Orange Band -->
+                            <path id="sec-315" class="stadium-sector" fill="#f97316" d="M 290 150 L 410 140 L 410 100 L 270 110 Z" onclick="selectSector('Сектор 315 (Категория 2)', 1.15, 'Северен среден етаж', '#f97316')"><title>Сектор 315</title></path>
+                            <text x="350" y="125" class="stadium-sector-text">315</text>
+
+                            <path id="sec-318" class="stadium-sector" fill="#f97316" d="M 410 140 L 530 150 L 550 105 L 410 100 Z" onclick="selectSector('Сектор 318 (Категория 2)', 1.15, 'Северен среден етаж', '#f97316')"><title>Сектор 318</title></path>
+                            <text x="470" y="125" class="stadium-sector-text">318</text>
+
+                            <!-- Bottom Orange Band -->
+                            <path id="sec-305" class="stadium-sector" fill="#f97316" d="M 290 470 L 410 480 L 410 520 L 270 510 Z" onclick="selectSector('Сектор 305 (Категория 2)', 1.15, 'Южен среден етаж - Панорама', '#f97316')"><title>Сектор 305</title></path>
+                            <text x="350" y="495" class="stadium-sector-text">305</text>
+
+                            <path id="sec-308" class="stadium-sector" fill="#f97316" d="M 410 480 L 530 470 L 550 515 L 410 520 Z" onclick="selectSector('Сектор 308 (Категория 2)', 1.15, 'Южен среден етаж - Панорама', '#f97316')"><title>Сектор 308</title></path>
+                            <text x="470" y="495" class="stadium-sector-text">308</text>
+
+                            <!-- ================= 6. LOWER TIER BLUE & VIP GOLD (101-109, 119-124, 001-003, 104) ================= -->
+                            <!-- Top Blue Sector (119-123) -->
+                            <path id="sec-119" class="stadium-sector" fill="#2563eb" d="M 330 190 L 430 190 L 430 150 L 330 150 Z" onclick="selectSector('Сектор 119 (Категория 1)', 1.2, 'Северна трибуна - Долен ред', '#2563eb')"><title>Сектор 119</title></path>
+                            <text x="380" y="170" class="stadium-sector-text">119</text>
+
+                            <path id="sec-122" class="stadium-sector" fill="#2563eb" d="M 430 190 L 530 190 L 530 150 L 430 150 Z" onclick="selectSector('Сектор 122 (Категория 1)', 1.2, 'Северна трибуна - Долен ред', '#2563eb')"><title>Сектор 122</title></path>
+                            <text x="480" y="170" class="stadium-sector-text">122</text>
+
+                            <!-- Bottom Blue Sectors (101-109) -->
+                            <path id="sec-107" class="stadium-sector" fill="#2563eb" d="M 300 430 L 370 430 L 370 470 L 300 470 Z" onclick="selectSector('Сектор 107 (Категория 1)', 1.2, 'Южна трибуна - Долен ред', '#2563eb')"><title>Сектор 107</title></path>
+                            <text x="335" y="450" class="stadium-sector-text">107</text>
+
+                            <!-- Central VIP Sectors (104, 001, 002) -->
+                            <path id="sec-104" class="stadium-sector selected" fill="#f59e0b" d="M 370 430 L 470 430 L 470 470 L 370 470 Z" onclick="selectSector('Сектор 104 (VIP)', 1.4, 'Централна VIP ложа до тунела на играчите', '#f59e0b')"><title>Сектор 104 VIP</title></path>
+                            <text x="420" y="450" class="stadium-sector-text" fill="#0f172a" font-weight="900">★ 104 VIP ★</text>
+
+                            <path id="sec-102" class="stadium-sector" fill="#2563eb" d="M 470 430 L 540 430 L 540 470 L 470 470 Z" onclick="selectSector('Сектор 102 (Категория 1)', 1.2, 'Южна трибуна - Долен ред', '#2563eb')"><title>Сектор 102</title></path>
+                            <text x="505" y="450" class="stadium-sector-text">102</text>
+
+                            <!-- ================= 7. FOOTBALL PITCH (CENTER) ================= -->
+                            <!-- Grass pitch -->
+                            <rect x="250" y="210" width="380" height="200" fill="#1e293b" stroke="#ffffff" stroke-width="2.5" rx="4"/>
+                            
+                            <!-- Halfway line -->
+                            <line x1="440" y1="210" x2="440" y2="410" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85"/>
+                            
+                            <!-- Center circle -->
+                            <circle cx="440" cy="310" r="45" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85"/>
+                            <circle cx="440" cy="310" r="3.5" fill="#ffffff"/>
+
+                            <!-- Left Penalty Box -->
+                            <rect x="250" y="250" width="65" height="120" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85"/>
+                            <rect x="250" y="275" width="25" height="70" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-opacity="0.85"/>
+                            
+                            <!-- Right Penalty Box -->
+                            <rect x="565" y="250" width="65" height="120" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85"/>
+                            <rect x="605" y="275" width="25" height="70" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-opacity="0.85"/>
+
+                            <!-- Pitch Label -->
+                            <text x="440" y="305" font-size="13" font-weight="800" fill="rgba(255,255,255,0.4)" text-anchor="middle" letter-spacing="3">ФУТБОЛЕН ТЕРЕН</text>
+                            <text x="440" y="325" font-size="10" font-weight="600" fill="rgba(255,255,255,0.25)" text-anchor="middle">STADIUM BOWL</text>
+                        </svg>
+                        <div class="text-center mt-2">
+                            <small class="tickets-muted">👆 Кликнете директно върху сектор от стадиона, за да го изберете</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Selected Sector & Checkout Card -->
+                <div class="col-lg-4">
+                    <div class="stadium-info-panel h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <span class="tickets-kicker">Избран сектор</span>
+                            <h3 id="displaySectorName" class="fs-4 fw-bold text-warning mb-2">Сектор 104 (VIP)</h3>
+                            <p id="displaySectorDesc" class="tickets-muted small mb-3">Централна VIP ложа до тунела на играчите</p>
+
+                            <!-- Sector Dropdown Selector (Sync with Map) -->
+                            <div class="mb-3">
+                                <label class="form-label text-white small fw-semibold">Избор от списък:</label>
+                                <select id="sectorSelect" class="form-select tickets-input" onchange="onSectorDropdownChange()">
+                                    <optgroup label="🌟 VIP Ложи (+40%)">
+                                        <option value="Сектор 104 (VIP)" data-rate="1.4" data-desc="Централна VIP ложа до тунела на играчите" data-color="#f59e0b" selected>Сектор 104 (VIP Президентска ложа)</option>
+                                        <option value="Сектор 801 (VIP Ложа)" data-rate="1.4" data-desc="Южна VIP ложа с кетъринг" data-color="#f59e0b">Сектор 801 (VIP Юг)</option>
+                                        <option value="Сектор 802 (VIP Ложа)" data-rate="1.4" data-desc="Северна VIP ложа с кетъринг" data-color="#f59e0b">Сектор 802 (VIP Север)</option>
+                                    </optgroup>
+                                    <optgroup label="🟦 Категория 1 - Долен етаж (+20%)">
+                                        <option value="Сектор 102 (Категория 1)" data-rate="1.2" data-desc="Южна трибуна - Долен ред с прекрасен изглед" data-color="#2563eb">Сектор 102 (Централен сектор)</option>
+                                        <option value="Сектор 107 (Категория 1)" data-rate="1.2" data-desc="Южна трибуна - Долен ред" data-color="#2563eb">Сектор 107 (Централен сектор)</option>
+                                        <option value="Сектор 119 (Категория 1)" data-rate="1.2" data-desc="Северна трибуна - Долен ред" data-color="#2563eb">Сектор 119 (Север)</option>
+                                        <option value="Сектор 122 (Категория 1)" data-rate="1.2" data-desc="Северна трибуна - Долен ред" data-color="#2563eb">Сектор 122 (Север)</option>
+                                    </optgroup>
+                                    <optgroup label="🟧 Категория 2 - Среден етаж (+15%)">
+                                        <option value="Сектор 305 (Категория 2)" data-rate="1.15" data-desc="Южен среден етаж - Панорама" data-color="#f97316">Сектор 305 (Южен среден етаж)</option>
+                                        <option value="Сектор 308 (Категория 2)" data-rate="1.15" data-desc="Южен среден етаж - Панорама" data-color="#f97316">Сектор 308 (Южен среден етаж)</option>
+                                        <option value="Сектор 315 (Категория 2)" data-rate="1.15" data-desc="Северен среден етаж" data-color="#f97316">Сектор 315 (Северен среден етаж)</option>
+                                        <option value="Сектор 318 (Категория 2)" data-rate="1.15" data-desc="Северен среден етаж" data-color="#f97316">Сектор 318 (Северен среден етаж)</option>
+                                    </optgroup>
+                                    <optgroup label="🟩 Източна трибуна (-10%)">
+                                        <option value="Сектор 250 (Източна трибуна)" data-rate="0.9" data-desc="Източна трибуна - Гостуващи фенове" data-color="#065f46">Сектор 250 (Източна трибуна)</option>
+                                        <option value="Сектор 252 (Източна трибуна)" data-rate="0.9" data-desc="Източна трибуна - Югоизток" data-color="#065f46">Сектор 252 (Източна трибуна)</option>
+                                        <option value="Сектор 254 (Източна трибуна)" data-rate="0.9" data-desc="Източна трибуна - Долен етаж" data-color="#065f46">Сектор 254 (Източна трибуна)</option>
+                                        <option value="Сектор 256 (Източна трибуна)" data-rate="0.9" data-desc="Източна трибуна - Долен етаж" data-color="#065f46">Сектор 256 (Източна трибуна)</option>
+                                        <option value="Сектор 322 (Източна трибуна)" data-rate="0.9" data-desc="Източна трибуна - Център" data-color="#065f46">Сектор 322 (Източна трибуна)</option>
+                                    </optgroup>
+                                    <optgroup label="🟩 Западна трибуна (Базова цена)">
+                                        <option value="Сектор 112 (Западна трибуна)" data-rate="1.0" data-desc="Западна трибуна - Зад вратата" data-color="#65a30d">Сектор 112 (Западна трибуна)</option>
+                                        <option value="Сектор 116 (Северна трибуна)" data-rate="1.1" data-desc="Северна трибуна - Странична линия" data-color="#38bdf8">Сектор 116 (Северна трибуна)</option>
+                                        <option value="Сектор 418 (Западна трибуна)" data-rate="0.95" data-desc="Западен среден етаж" data-color="#0f766e">Сектор 418 (Западна трибуна)</option>
+                                        <option value="Сектор 420 (Западна трибуна)" data-rate="0.95" data-desc="Западен среден етаж" data-color="#0f766e">Сектор 420 (Западна трибуна)</option>
+                                    </optgroup>
+                                    <optgroup label="🟫 Категория 3 - Горен етаж (-25%)">
+                                        <option value="Сектор 504 (Категория 3)" data-rate="0.75" data-desc="Южен централен горен етаж" data-color="#881337">Сектор 504 (Горен етаж)</option>
+                                        <option value="Сектор 506 (Категория 3)" data-rate="0.75" data-desc="Южен централен горен етаж" data-color="#881337">Сектор 506 (Горен етаж)</option>
+                                        <option value="Сектор 508 (Категория 3)" data-rate="0.75" data-desc="Южен горен етаж" data-color="#881337">Сектор 508 (Горен етаж)</option>
+                                        <option value="Сектор 521 (Категория 3)" data-rate="0.75" data-desc="Северен горен етаж" data-color="#881337">Сектор 521 (Горен етаж)</option>
+                                        <option value="Сектор 523 (Категория 3)" data-rate="0.75" data-desc="Северен централен горен етаж" data-color="#881337">Сектор 523 (Горен етаж)</option>
+                                        <option value="Сектор 527 (Категория 3)" data-rate="0.75" data-desc="Североизточен горен етаж" data-color="#881337">Сектор 527 (Горен етаж)</option>
+                                        <option value="Сектор 530 (Категория 3)" data-rate="0.75" data-desc="Източен ъглов горен сектор" data-color="#881337">Сектор 530 (Горен етаж)</option>
+                                        <option value="Сектор 514 (Западен горен)" data-rate="0.85" data-desc="Западен сектор - Ултраси" data-color="#2e1065">Сектор 514 (Западен горен)</option>
+                                        <option value="Сектор 516 (Западен горен)" data-rate="0.85" data-desc="Западен сектор - Ултраси" data-color="#2e1065">Сектор 516 (Западен горен)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <hr class="border-white border-opacity-10 my-3" />
+
+                            <!-- Price Calculation -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-white-50">Единична цена за сектор:</span>
+                                <strong id="unitPriceDisplay" class="fs-5 text-white">@((basePrice * 1.4m).ToString("0.00")) €</strong>
+                            </div>
+
+                            <!-- Purchase Form -->
+                            <form asp-controller="Cart" asp-action="Add" method="post">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <input type="hidden" id="formSector" name="sector" value="Сектор 104 (VIP)" />
+                                <input type="hidden" id="formPrice" name="price" value="@((basePrice * 1.4m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))" />
+                                <input type="hidden" name="returnUrl" value="@Url.Action("Details", "Event", new { id = Model.Id })" />
+
+                                <div class="mb-3">
+                                    <label class="form-label text-white small fw-semibold">Брой билети:</label>
+                                    <div class="input-group">
+                                        <button type="button" class="btn tickets-btn-ghost px-3" onclick="adjustQty(-1)">-</button>
+                                        <input type="number" id="qtyInput" name="quantity" class="form-control text-center tickets-input fw-bold" value="1" min="1" max="10" onchange="calculateTotal()" />
+                                        <button type="button" class="btn tickets-btn-ghost px-3" onclick="adjustQty(1)">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-dark bg-opacity-50 rounded-3 border border-white border-opacity-10 mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-white-50">Обща сума:</span>
+                                        <strong id="totalPriceDisplay" class="fs-4 text-warning">@((basePrice * 1.4m).ToString("0.00")) €</strong>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn tickets-btn-primary w-100 py-3 fw-bold fs-6 shadow">
+                                    🛒 Добави билетите в количката
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top border-white border-opacity-10 text-center">
+                            <small class="tickets-muted">✓ Мястото се запазва за 20 минути при преминаване към плащане</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a class="btn tickets-btn-ghost px-4 py-2" asp-controller="Home" asp-action="Index">⬅ Обратно към всички събития</a>
+        </div>
     </div>
 </section>
+
+<!-- Modal for Full-Resolution Official Stadium Image -->
+<div class="modal fade" id="stadiumImageModal" tabindex="-1" aria-labelledby="stadiumImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content tickets-card-bg border-0 p-3">
+            <div class="modal-header border-bottom border-white border-opacity-10">
+                <h5 class="modal-title text-white" id="stadiumImageModalLabel">🏟️ Официална схема на стадиона</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Затвори"></button>
+            </div>
+            <div class="modal-body text-center p-2">
+                <img src="~/images/stadium-sectors.png" alt="Официална схема на стадиона" class="img-fluid rounded-3" style="max-height: 80vh;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const basePrice = @Model.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    let currentMultiplier = 1.4;
+
+    function selectSector(name, multiplier, desc, color) {
+        currentMultiplier = multiplier;
+        
+        // Update display text
+        document.getElementById('displaySectorName').textContent = name;
+        document.getElementById('displaySectorDesc').textContent = desc;
+        
+        // Update form hidden fields
+        document.getElementById('formSector').value = name;
+
+        // Synchronize dropdown
+        const select = document.getElementById('sectorSelect');
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === name) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+
+        // Highlight sector on SVG
+        document.querySelectorAll('.stadium-sector').forEach(el => el.classList.remove('selected'));
+        
+        // Attempt to find element matching sector id (e.g. 'sec-104')
+        const sectorNum = name.match(/\d+/);
+        if (sectorNum) {
+            const svgElement = document.getElementById('sec-' + sectorNum[0]);
+            if (svgElement) {
+                svgElement.classList.add('selected');
+            }
+        }
+
+        calculateTotal();
+    }
+
+    function onSectorDropdownChange() {
+        const select = document.getElementById('sectorSelect');
+        const option = select.options[select.selectedIndex];
+        const name = option.value;
+        const multiplier = parseFloat(option.getAttribute('data-rate'));
+        const desc = option.getAttribute('data-desc');
+        const color = option.getAttribute('data-color');
+        
+        selectSector(name, multiplier, desc, color);
+    }
+
+    function adjustQty(delta) {
+        const input = document.getElementById('qtyInput');
+        let val = parseInt(input.value) || 1;
+        val = Math.max(1, Math.min(10, val + delta));
+        input.value = val;
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        const input = document.getElementById('qtyInput');
+        let qty = parseInt(input.value) || 1;
+        if (qty < 1) qty = 1;
+
+        const unitPrice = basePrice * currentMultiplier;
+        const total = unitPrice * qty;
+
+        document.getElementById('unitPriceDisplay').textContent = unitPrice.toFixed(2) + ' €';
+        document.getElementById('totalPriceDisplay').textContent = total.toFixed(2) + ' €';
+        document.getElementById('formPrice').value = unitPrice.toFixed(2);
+    }
+
+    // Initialize total calculation
+    calculateTotal();
+</script>
+}

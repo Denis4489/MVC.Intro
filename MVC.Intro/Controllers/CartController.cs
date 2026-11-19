@@ -32,10 +32,11 @@ namespace MVC.Intro.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(Guid id, string? returnUrl = null)
+        public async Task<IActionResult> Add(Guid id, string? sector = null, decimal? price = null, int quantity = 1, string? returnUrl = null)
         {
-            await _cartService.AddAsync(id);
-            TempData["Notice"] = "Артикулът е добавен в количката.";
+            var chosenSector = string.IsNullOrWhiteSpace(sector) ? "Сектор 104 (VIP)" : sector.Trim();
+            await _cartService.AddAsync(id, chosenSector, price, Math.Max(1, quantity));
+            TempData["Notice"] = $"Билет за {chosenSector} е добавен в количката.";
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
@@ -46,17 +47,17 @@ namespace MVC.Intro.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Update(Guid id, int quantity)
+        public IActionResult Update(Guid id, int quantity, string? sector = null)
         {
-            _cartService.Update(id, quantity);
+            _cartService.Update(id, quantity, sector);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Remove(Guid id)
+        public IActionResult Remove(Guid id, string? sector = null)
         {
-            _cartService.Remove(id);
+            _cartService.Remove(id, sector);
             TempData["Notice"] = "Артикулът е премахнат.";
             return RedirectToAction(nameof(Index));
         }
@@ -113,7 +114,7 @@ namespace MVC.Intro.Controllers
                 var @event = await _eventService.GetEventByIdAsync(line.ProductId);
                 var venue = string.IsNullOrWhiteSpace(@event?.Venue) ? "Централен стадион" : @event.Venue;
                 var eventDate = @event?.EventDate ?? DateTime.Now.AddDays(7);
-                var ticketType = string.IsNullOrWhiteSpace(@event?.TicketType) ? "Стандартен" : @event.TicketType;
+                var ticketType = !string.IsNullOrWhiteSpace(line.Sector) ? line.Sector : (string.IsNullOrWhiteSpace(@event?.TicketType) ? "Стандартен" : @event.TicketType);
 
                 var ticketCode = $"{orderId}-{ticketIndex++:D2}";
                 var qrPayload = $"=== TICKETS ARENA ===\n" +
@@ -121,9 +122,9 @@ namespace MVC.Intro.Controllers
                                 $"Билет код: {ticketCode}\n" +
                                 $"Събитие: {line.Name}\n" +
                                 $"Категория: {line.Category}\n" +
+                                $"Сектор: {ticketType}\n" +
                                 $"Място: {venue}\n" +
                                 $"Дата: {eventDate:dd.MM.yyyy HH:mm} ч.\n" +
-                                $"Тип билет: {ticketType}\n" +
                                 $"Количество: {line.Quantity} бр.\n" +
                                 $"Притежател: {customerName}\n" +
                                 $"Сума: {line.LineTotal:0.00} €\n" +
@@ -148,7 +149,7 @@ namespace MVC.Intro.Controllers
             }
 
             // Save order in database for admin panel and history
-            var summary = string.Join(", ", order.Tickets.Select(t => $"{t.EventName} ({t.Quantity} бр.)"));
+            var summary = string.Join(", ", order.Tickets.Select(t => $"{t.EventName} - {t.TicketType} ({t.Quantity} бр.)"));
             var orderRecord = new OrderRecord
             {
                 Id = Guid.NewGuid(),

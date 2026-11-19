@@ -28,7 +28,7 @@ namespace MVC.Intro.Services
 
         public int Count => GetItems().Sum(item => item.Quantity);
 
-        public async Task AddAsync(Guid eventId, int quantity = 1)
+        public async Task AddAsync(Guid eventId, string sector = "Сектор 104 (VIP)", decimal? price = null, int quantity = 1)
         {
             var @event = await _eventService.GetEventByIdAsync(eventId);
             if (@event == null)
@@ -36,10 +36,16 @@ namespace MVC.Intro.Services
                 return;
             }
             var items = GetItems();
-            var existing = items.FirstOrDefault(item => item.ProductId == eventId);
+            var existing = items.FirstOrDefault(item => item.ProductId == eventId && item.Sector == sector);
             if (existing is null)
             {
-                items.Add(new CartItem { ProductId = eventId, Quantity = Math.Max(1, quantity) });
+                items.Add(new CartItem 
+                { 
+                    ProductId = eventId, 
+                    Sector = sector,
+                    Price = price.HasValue && price.Value > 0 ? price.Value : @event.Price,
+                    Quantity = Math.Max(1, quantity) 
+                });
             }
             else
             {
@@ -49,10 +55,10 @@ namespace MVC.Intro.Services
             Save(items);
         }
 
-        public void Update(Guid eventId, int quantity)
+        public void Update(Guid eventId, int quantity, string? sector = null)
         {
             var items = GetItems();
-            var existing = items.FirstOrDefault(item => item.ProductId == eventId);
+            var existing = items.FirstOrDefault(item => item.ProductId == eventId && (sector == null || item.Sector == sector));
             if (existing is null)
             {
                 return;
@@ -70,9 +76,9 @@ namespace MVC.Intro.Services
             Save(items);
         }
 
-        public void Remove(Guid eventId)
+        public void Remove(Guid eventId, string? sector = null)
         {
-            var items = GetItems().Where(item => item.ProductId != eventId).ToList();
+            var items = GetItems().Where(item => !(item.ProductId == eventId && (sector == null || item.Sector == sector))).ToList();
             Save(items);
         }
 
@@ -97,7 +103,8 @@ namespace MVC.Intro.Services
                     ProductId = @event.Id,
                     Name = @event.Name,
                     Category = catalog.Category,
-                    Price = @event.Price,
+                    Sector = string.IsNullOrEmpty(item.Sector) ? "Сектор 104 (VIP)" : item.Sector,
+                    Price = item.Price > 0 ? item.Price : @event.Price,
                     Quantity = item.Quantity
                 });
                 validItems.Add(item);

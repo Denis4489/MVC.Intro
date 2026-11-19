@@ -553,4 +553,89 @@ h1, h2, h3, .psg-title, .psg-brand strong, .navbar-brand {
   word-break: break-all;
   text-align: center;
 }
+
+/* ── Interactive Stadium Sector Selector ─────────────────────────────── */
+.stadium-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.stadium-map-box {
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border-radius: 16px;
+  padding: 16px;
+  position: relative;
+}
+
+.stadium-svg {
+  width: 100%;
+  max-height: 520px;
+  display: block;
+  margin: 0 auto;
+}
+
+.stadium-sector {
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 1.2px;
+}
+
+.stadium-sector:hover {
+  filter: brightness(1.35);
+  stroke: #ffffff;
+  stroke-width: 2.5px;
+}
+
+.stadium-sector.selected {
+  filter: brightness(1.4) drop-shadow(0 0 10px rgba(245, 158, 11, 0.95)) !important;
+  stroke: #fbbf24 !important;
+  stroke-width: 3.5px !important;
+}
+
+.stadium-sector-text {
+  font-size: 8px;
+  font-weight: 700;
+  fill: #ffffff;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.stadium-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.stadium-legend-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.stadium-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stadium-info-panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+}
 /* ─────────────────────────────────────────────────────────────────────── */

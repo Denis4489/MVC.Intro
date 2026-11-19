@@ -41,12 +41,16 @@
                                 <tr>
                                     <td>
                                         <strong>@line.Name</strong>
-                                        <div class="tickets-muted">@line.Category</div>
+                                        <div class="tickets-muted small">@line.Category</div>
+                                        <div class="mt-1">
+                                            <span class="badge bg-warning text-dark px-2 py-1">📍 @line.Sector</span>
+                                        </div>
                                     </td>
                                     <td>@line.Price.ToString("0.00") €</td>
                                     <td>
                                         <form asp-action="Update" method="post" class="d-flex gap-2 align-items-center">
                                             <input type="hidden" name="id" value="@line.ProductId" />
+                                            <input type="hidden" name="sector" value="@line.Sector" />
                                             <input class="form-control tickets-qty" type="number" min="1" max="20" name="quantity" value="@line.Quantity" />
                                             <button class="btn btn-sm tickets-btn-ghost" type="submit">Обнови</button>
                                         </form>
@@ -55,6 +59,7 @@
                                     <td class="text-end">
                                         <form asp-action="Remove" method="post">
                                             <input type="hidden" name="id" value="@line.ProductId" />
+                                            <input type="hidden" name="sector" value="@line.Sector" />
                                             <button class="btn btn-sm btn-outline-danger" type="submit">Премахни</button>
                                         </form>
                                     </td>
